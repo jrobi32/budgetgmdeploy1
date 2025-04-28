@@ -17,7 +17,7 @@ class NBABudgetGame {
 
     async loadPlayers() {
         try {
-            const response = await fetch('nba_players_final_updated.csv');
+            const response = await fetch('/nba_players_final_updated.csv');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
