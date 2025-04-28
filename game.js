@@ -281,11 +281,11 @@ class NBABudgetGame {
             console.error('Error in season simulation:', error);
             // Display default results if simulation fails
             this.displayResults({
-                wins: 41,
+                wins: 8,
                 total_ppg: '100.0',
                 total_rpg: '40.0',
                 total_apg: '20.0',
-                outcome: this.getSeasonOutcome(41)
+                outcome: this.getSeasonOutcome(8)
             });
         }
     }
@@ -393,7 +393,7 @@ function calculateExpectedWins(selectedPlayers) {
         predictedWins = predictedWins * 1.3;  // Assume starters account for about 70% of wins
         
         // Ensure prediction stays within reasonable bounds and round to nearest integer
-        return Math.round(Math.max(4, Math.min(74, predictedWins)));
+        return Math.round(Math.max(8, Math.min(74, predictedWins)));
     } catch (error) {
         console.error('Error in win calculation:', error);
         console.log('Player data:', selectedPlayers); // Debug log
