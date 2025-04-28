@@ -8,7 +8,7 @@ A web application that allows users to build their dream NBA team within a budge
 - Win prediction based on player statistics
 - Modern, responsive UI
 
-Last updated: 2024-04-28 12:00 PM
+Last updated: 2024-04-28 12:30 PM (Testing webhook deployment)
 
 ## Frontend Files
 - `index.html` - Main HTML structure
@@ -16,7 +16,7 @@ Last updated: 2024-04-28 12:00 PM
 - `game.js` - Game logic and API interactions
 
 ## Backend
-The backend is deployed on Python Anywhere and provides the following endpoints:
+The backend is deployed on Render and provides the following endpoints:
 - `/predict` - Predicts team performance based on selected players
 
 ## Live Demo
