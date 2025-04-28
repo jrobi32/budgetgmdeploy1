@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import numpy as np
-import pandas as pd
 import logging
 import os
 
@@ -23,9 +21,9 @@ def predict_team_wins(player_stats):
             'assists': sum(float(p['Assists Per Game (Avg)']) for p in player_stats),
             'steals': sum(float(p.get('Steals Per Game (Avg)', 0)) for p in player_stats),
             'blocks': sum(float(p.get('Blocks Per Game (Avg)', 0)) for p in player_stats),
-            'fg_pct': np.mean([float(p.get('Field Goal % (Avg)', 45)) for p in player_stats]),
-            'ft_pct': np.mean([float(p.get('Free Throw % (Avg)', 75)) for p in player_stats]),
-            'three_pct': np.mean([float(p.get('Three Point % (Avg)', 35)) for p in player_stats])
+            'fg_pct': sum(float(p.get('Field Goal % (Avg)', 45)) for p in player_stats) / len(player_stats),
+            'ft_pct': sum(float(p.get('Free Throw % (Avg)', 75)) for p in player_stats) / len(player_stats),
+            'three_pct': sum(float(p.get('Three Point % (Avg)', 35)) for p in player_stats) / len(player_stats)
         }
         
         logger.debug("Team totals: %s", team_totals)
