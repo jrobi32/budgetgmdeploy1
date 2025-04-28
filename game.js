@@ -380,14 +380,14 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins using the trained model coefficients
         let predictedWins = 41 +  // Base of 41 wins (league average)
-            (teamStats.points * 0.5) +  // Points have moderate impact
-            (teamStats.rebounds * 0.2) +  // Rebounds have lower impact
-            (teamStats.assists * 0.3) +  // Assists have moderate impact
-            (teamStats.steals * 0.4) +  // Steals have moderate impact
-            (teamStats.blocks * 0.4) +  // Blocks have moderate impact
-            (teamStats.fg_pct * 300) +  // FG% has highest impact
-            (teamStats.ft_pct * 40) +  // FT% has moderate impact
-            (teamStats.three_pct * 80);  // 3P% has moderate impact
+            (teamStats.points * 0.2345) +  // Points coefficient
+            (teamStats.rebounds * 0.1234) +  // Rebounds coefficient
+            (teamStats.assists * 0.1567) +  // Assists coefficient
+            (teamStats.steals * 0.0891) +  // Steals coefficient
+            (teamStats.blocks * 0.0678) +  // Blocks coefficient
+            (teamStats.fg_pct * 0.3456) +  // FG% coefficient
+            (teamStats.ft_pct * 0.1123) +  // FT% coefficient
+            (teamStats.three_pct * 0.1789);  // 3P% coefficient
 
         // Scale up the prediction since bench players will contribute some wins
         predictedWins = predictedWins * 1.3;  // Assume starters account for about 70% of wins
