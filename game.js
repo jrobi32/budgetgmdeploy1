@@ -206,122 +206,124 @@ class NBABudgetGame {
 
     async simulateSeason() {
         try {
-            let points = 0;
-            let rebounds = 0;
-            let assists = 0;
-            let steals = 0;
-            let blocks = 0;
-            let fgPercentages = [];  // Array to store FG percentages
-            let ftPercentages = [];  // Array to store FT percentages
-            let threePointPercentages = [];  // Array to store 3PT percentages
+            // Prepare team data
+            const teamData = this.selectedPlayers.map(player => ({
+                'Points Per Game (Avg)': player['Points Per Game (Avg)'],
+                'Rebounds Per Game (Avg)': player['Rebounds Per Game (Avg)'],
+                'Assists Per Game (Avg)': player['Assists Per Game (Avg)'],
+                'Steals Per Game (Avg)': player['Steals Per Game (Avg)'],
+                'Blocks Per Game (Avg)': player['Blocks Per Game (Avg)'],
+                'Field Goal % (Avg)': player['Field Goal % (Avg)'],
+                'Free Throw % (Avg)': player['Free Throw % (Avg)'],
+                'Three Point % (Avg)': player['Three Point % (Avg)']
+            }));
 
-            // Calculate team totals
-            this.selectedPlayers.forEach(player => {
-                points += parseFloat(player['Points Per Game (Avg)']);
-                rebounds += parseFloat(player['Rebounds Per Game (Avg)']);
-                assists += parseFloat(player['Assists Per Game (Avg)']);
-                steals += parseFloat(player['Steals Per Game (Avg)']);
-                blocks += parseFloat(player['Blocks Per Game (Avg)']);
-                
-                // Store percentages in arrays
-                fgPercentages.push(parseFloat(player['Field Goal % (Avg)']));
-                ftPercentages.push(parseFloat(player['Free Throw % (Avg)']));
-                threePointPercentages.push(parseFloat(player['Three Point % (Avg)']));
+            // Call the backend API
+            const response = await fetch('https://budgetgm-backend.onrender.com/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(teamData)
             });
 
-            // Calculate average percentages
-            const fgPercentage = fgPercentages.reduce((a, b) => a + b, 0) / fgPercentages.length;
-            const ftPercentage = ftPercentages.reduce((a, b) => a + b, 0) / ftPercentages.length;
-            const threePointPercentage = threePointPercentages.reduce((a, b) => a + b, 0) / threePointPercentages.length;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
-            // Log team statistics for debugging
-            console.log('Team Statistics:', {
-                points, rebounds, assists, steals, blocks,
-                fgPercentage, ftPercentage, threePointPercentage
-            });
+            const data = await response.json();
+            const predictedWins = data.predicted_wins;
 
-            // Calculate predicted wins using trained model coefficients
-            let predictedWins = -371.2357 +  // Intercept
-                (points * -0.5129) +
-                (rebounds * 3.6424) +
-                (assists * -1.8054) +
-                (steals * 5.7423) +
-                (blocks * 1.2707) +
-                (fgPercentage * 408.3473) +
-                (ftPercentage * 70.4720) +
-                (threePointPercentage * 252.3153);
-
-            // Scale up prediction since bench players contribute some wins
-            predictedWins = predictedWins * 1.3;  // Assume starters account for about 70% of wins
-
-            // Ensure prediction stays within reasonable bounds
-            predictedWins = Math.max(20, Math.min(62, Math.round(predictedWins)));
-
-            console.log('Predicted Wins:', predictedWins);
-
-            // Format data for display
-            const results = {
+            // Display results
+            this.displayResults({
                 wins: predictedWins,
-                total_ppg: points.toFixed(1),
-                total_rpg: rebounds.toFixed(1),
-                total_apg: assists.toFixed(1),
-                outcome: this.getSeasonOutcome(predictedWins)
-            };
-
-            // Display the results
-            this.displayResults(results);
+                players: this.selectedPlayers
+            });
 
         } catch (error) {
-            console.error('Error in season simulation:', error);
-            // Display default results if simulation fails
-            this.displayResults({
-                wins: 41,
-                total_ppg: '100.0',
-                total_rpg: '40.0',
-                total_apg: '20.0',
-                outcome: this.getSeasonOutcome(41)
-            });
+            console.error('Error simulating season:', error);
+            this.resultsSection.innerHTML = `
+                <div class="error">
+                    Error simulating season: ${error.message}
+                </div>
+            `;
         }
     }
 
     displayResults(data) {
-        // Create results div if it doesn't exist
-        let resultsDiv = document.getElementById('results');
-        if (!resultsDiv) {
-            resultsDiv = document.createElement('div');
-            resultsDiv.id = 'results';
-            document.body.appendChild(resultsDiv);
-        }
+        // Calculate team totals
+        let points = 0;
+        let rebounds = 0;
+        let assists = 0;
+        let steals = 0;
+        let blocks = 0;
+        let fgPercentages = [];
+        let ftPercentages = [];
+        let threePointPercentages = [];
 
-        try {
-            resultsDiv.innerHTML = `
-                <div class="results-container">
-                    <h2>SEASON RESULTS</h2>
-                    <p>Projected Wins: ${data.wins}</p>
-                    <p>Team Stats:</p>
-                    <ul>
-                        <li>Points Per Game: ${data.total_ppg}</li>
-                        <li>Rebounds Per Game: ${data.total_rpg}</li>
-                        <li>Assists Per Game: ${data.total_apg}</li>
-                    </ul>
-                    <p>Season Outlook: ${data.outcome}</p>
-                    <button onclick="game.closeResults()" class="close-button">Close</button>
+        data.players.forEach(player => {
+            points += parseFloat(player['Points Per Game (Avg)']);
+            rebounds += parseFloat(player['Rebounds Per Game (Avg)']);
+            assists += parseFloat(player['Assists Per Game (Avg)']);
+            steals += parseFloat(player['Steals Per Game (Avg)']);
+            blocks += parseFloat(player['Blocks Per Game (Avg)']);
+            
+            fgPercentages.push(parseFloat(player['Field Goal % (Avg)']));
+            ftPercentages.push(parseFloat(player['Free Throw % (Avg)']));
+            threePointPercentages.push(parseFloat(player['Three Point % (Avg)']));
+        });
+
+        // Calculate averages
+        const avgFG = (fgPercentages.reduce((a, b) => a + b, 0) / fgPercentages.length).toFixed(1);
+        const avgFT = (ftPercentages.reduce((a, b) => a + b, 0) / ftPercentages.length).toFixed(1);
+        const avg3PT = (threePointPercentages.reduce((a, b) => a + b, 0) / threePointPercentages.length).toFixed(1);
+
+        this.resultsSection.innerHTML = `
+            <div class="results-container">
+                <h2>Season Prediction Results</h2>
+                <div class="prediction-card">
+                    <h3>Predicted Wins: ${data.wins}</h3>
+                    <p class="outcome">${this.getSeasonOutcome(data.wins)}</p>
                 </div>
-            `;
-            resultsDiv.style.display = 'block';
-            resultsDiv.classList.add('active');
-        } catch (error) {
-            console.error('Error displaying results:', error);
-            alert('Error displaying results. Please try again.');
-        }
-    }
-
-    closeResults() {
-        const resultsDiv = document.getElementById('results');
-        if (resultsDiv) {
-            resultsDiv.style.display = 'none';
-            resultsDiv.classList.remove('active');
-        }
+                <div class="team-stats">
+                    <h3>Team Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Points Per Game:</span>
+                            <span class="stat-value">${points.toFixed(1)}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Rebounds Per Game:</span>
+                            <span class="stat-value">${rebounds.toFixed(1)}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Assists Per Game:</span>
+                            <span class="stat-value">${assists.toFixed(1)}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Steals Per Game:</span>
+                            <span class="stat-value">${steals.toFixed(1)}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Blocks Per Game:</span>
+                            <span class="stat-value">${blocks.toFixed(1)}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Field Goal %:</span>
+                            <span class="stat-value">${avgFG}%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Free Throw %:</span>
+                            <span class="stat-value">${avgFT}%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Three Point %:</span>
+                            <span class="stat-value">${avg3PT}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     getSeasonOutcome(wins) {
