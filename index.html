@@ -17,20 +17,18 @@
             <div class="game-section">
                 <div class="players-section">
                     <h2>Available Players</h2>
-                    <div id="available-players" class="players-list"></div>
+                    <div class="players-grid"></div>
                 </div>
 
                 <div class="team-section">
                     <h2>Your Team</h2>
                     <div class="budget-display">
-                        <p>Remaining Budget: <span id="budget">$15</span></p>
+                        <p>Remaining Budget: $<span id="remaining-budget">15</span></p>
                     </div>
-                    <div id="selected-players" class="players-list"></div>
-                    <button id="predict-button" onclick="predictWins()">Predict Wins</button>
+                    <div class="team-display"></div>
+                    <button id="simulate-button" style="display: none;">Simulate Season</button>
                 </div>
             </div>
-
-            <div id="results" class="results-section"></div>
         </main>
     </div>
 

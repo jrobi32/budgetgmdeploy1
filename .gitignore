@@ -29,8 +29,5 @@ venv.bak/
 .DS_Store
 Thumbs.db
 
-# Frontend files (since this is backend only)
-index.html
-styles.css
-game.js
+# Test files
 test_model.js 
