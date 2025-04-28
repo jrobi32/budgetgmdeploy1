@@ -4,54 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ballin' on a Budget | BudgetGM</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Ballin' on a Budget | BudgetGM</h1>
+            <h1>Ballin' on a Budget</h1>
             <p>Build your team with a $15 budget. Select 5 players.</p>
         </header>
 
-        <div class="game-container">
-            <div class="players-section">
-                <h2>Available Players</h2>
-                <div class="players-grid">
-                    <!-- Players will be dynamically added here -->
+        <main>
+            <div class="game-section">
+                <div class="players-section">
+                    <h2>Available Players</h2>
+                    <div id="available-players" class="players-list"></div>
+                </div>
+
+                <div class="team-section">
+                    <h2>Your Team</h2>
+                    <div class="budget-display">
+                        <p>Remaining Budget: <span id="budget">$15</span></p>
+                    </div>
+                    <div id="selected-players" class="players-list"></div>
+                    <button id="predict-button" onclick="predictWins()">Predict Wins</button>
                 </div>
             </div>
 
-            <div class="team-section">
-                <h2>Your Team</h2>
-                <div class="team-display">
-                    <!-- Selected players will be shown here -->
-                </div>
-                <div class="budget-display">
-                    Remaining Budget: $<span id="remaining-budget">15</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="results-section" style="display: none;">
-            <h2>Final Team</h2>
-            <div class="final-team">
-                <!-- Final team will be shown here -->
-            </div>
-            <div class="team-stats">
-                <!-- Team stats will be shown here -->
-            </div>
-            <div class="season-results">
-                <!-- Season results will be shown here -->
-            </div>
-            <div class="player-stats">
-                <!-- Player statistics will be shown here -->
-            </div>
-        </div>
-
-        <button id="simulate-button" style="display: none;">Simulate Season</button>
+            <div id="results" class="results-section"></div>
+        </main>
     </div>
-    <div id="results"></div>
-    <div class="modal-backdrop"></div>
-    <script src="game.js"></script>
+
+    <script src="/src/game.js"></script>
 </body>
 </html> 
