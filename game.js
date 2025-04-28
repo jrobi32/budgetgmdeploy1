@@ -248,7 +248,7 @@ class NBABudgetGame {
             };
 
             // Make API request to backend
-            const response = await fetch('https://nba-budget-game-backend.onrender.com/predict', {
+            const response = await fetch('https://budgetbackenddeploy1.onrender.com/predict', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
