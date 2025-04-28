@@ -17,19 +17,28 @@ class NBABudgetGame {
 
     async loadPlayers() {
         try {
+            console.log('Attempting to load players from CSV...');
             const response = await fetch('/nba_players_final_updated.csv');
+            console.log('Response status:', response.status);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const csvText = await response.text();
+            console.log('CSV text length:', csvText.length);
             const players = this.parseCSV(csvText);
-            console.log('Loaded players:', players.length);
+            console.log('Successfully loaded players:', players.length);
             this.availablePlayers = players;
             this.initializeDisplayedPlayers();
             this.displayPlayers();
         } catch (error) {
             console.error('Error loading players:', error);
-            this.playersGrid.innerHTML = `<div class="error">Error loading players: ${error.message}</div>`;
+            this.playersGrid.innerHTML = `
+                <div class="error">
+                    Error loading players: ${error.message}
+                    <br>
+                    Please check the console for more details.
+                </div>
+            `;
         }
     }
 
