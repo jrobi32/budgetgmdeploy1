@@ -353,15 +353,15 @@ function calculateExpectedWins(selectedPlayers) {
         };
 
         // Calculate predicted wins using the trained model coefficients
-        let predictedWins = 5 +  // Lower base value to 5 wins
-            (teamStats.points * 0.58625) +  // Points coefficient (0.2345 * 2.5)
-            (teamStats.rebounds * 0.3085) +  // Rebounds coefficient (0.1234 * 2.5)
-            (teamStats.assists * 0.39175) +  // Assists coefficient (0.1567 * 2.5)
-            (teamStats.steals * 0.22275) +  // Steals coefficient (0.0891 * 2.5)
-            (teamStats.blocks * 0.1695) +  // Blocks coefficient (0.0678 * 2.5)
-            (teamStats.fg_pct * 0.864) +  // FG% coefficient (0.3456 * 2.5)
-            (teamStats.ft_pct * 0.28075) +  // FT% coefficient (0.1123 * 2.5)
-            (teamStats.three_pct * 0.44725);  // 3P% coefficient (0.1789 * 2.5)
+        let predictedWins = 5 +  // Keep base value at 5 wins
+            (teamStats.points * 0.39083) +  // Points coefficient (0.58625 / 1.5)
+            (teamStats.rebounds * 0.20567) +  // Rebounds coefficient (0.3085 / 1.5)
+            (teamStats.assists * 0.26117) +  // Assists coefficient (0.39175 / 1.5)
+            (teamStats.steals * 0.14850) +  // Steals coefficient (0.22275 / 1.5)
+            (teamStats.blocks * 0.11300) +  // Blocks coefficient (0.1695 / 1.5)
+            (teamStats.fg_pct * 0.57600) +  // FG% coefficient (0.864 / 1.5)
+            (teamStats.ft_pct * 0.18717) +  // FT% coefficient (0.28075 / 1.5)
+            (teamStats.three_pct * 0.29817);  // 3P% coefficient (0.44725 / 1.5)
 
         // Scale up the prediction since bench players will contribute some wins
         predictedWins = predictedWins * 1.2;  // Keep the same scaling factor
