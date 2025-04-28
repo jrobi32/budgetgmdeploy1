@@ -13,10 +13,11 @@ env.bak/
 venv.bak/
 
 # Data files
-*.csv
 *.joblib
 *.pkl
 *.model
+*.csv
+!nba_players_final_updated.csv
 
 # IDE
 .idea/
