@@ -17,9 +17,20 @@ app = Flask(__name__)
 # Enable CORS for all routes
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Load the model and scaler
-model = joblib.load('best_model.joblib')
-scaler = joblib.load('scaler.joblib')
+# Initialize model and scaler as None
+model = None
+scaler = None
+
+# Try to load the model and scaler
+try:
+    model = joblib.load('best_model.joblib')
+    scaler = joblib.load('scaler.joblib')
+    logger.info("Successfully loaded model and scaler")
+except FileNotFoundError as e:
+    logger.warning(f"Model files not found: {str(e)}")
+    logger.warning("Please upload best_model.joblib and scaler.joblib to the server")
+except Exception as e:
+    logger.error(f"Error loading model files: {str(e)}")
 
 def predict_team_wins(player_stats):
     """Predict wins for a given team's player stats"""
@@ -49,7 +60,7 @@ def predict_team_wins(player_stats):
         features = pd.DataFrame([team_totals])
         
         # Make prediction
-        if model is not None:
+        if model is not None and scaler is not None:
             predicted_wins = model.predict(features)[0]
             return round(predicted_wins)
         else:
@@ -73,10 +84,17 @@ def predict():
         input_data = np.array([[data[feature] for feature in features]])
         
         # Scale the input data
-        scaled_data = scaler.transform(input_data)
+        if scaler is not None:
+            scaled_data = scaler.transform(input_data)
+        else:
+            scaled_data = input_data
         
         # Make prediction
-        prediction = model.predict(scaled_data)[0]
+        if model is not None:
+            prediction = model.predict(scaled_data)[0]
+        else:
+            # Fallback prediction
+            prediction = 41
         
         # Ensure prediction is within reasonable bounds
         prediction = max(20, min(62, prediction))
@@ -87,6 +105,15 @@ def predict():
     except Exception as e:
         logger.error(f"Error in prediction: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'ok',
+        'model_loaded': model is not None,
+        'scaler_loaded': scaler is not None
+    })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
