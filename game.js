@@ -234,34 +234,8 @@ class NBABudgetGame {
             const ftPercentage = ftPercentages.reduce((a, b) => a + b, 0) / ftPercentages.length;
             const threePointPercentage = threePointPercentages.reduce((a, b) => a + b, 0) / threePointPercentages.length;
 
-            // Prepare data for API request
-            const teamStats = {
-                PTS: points,
-                REB: rebounds,
-                AST: assists,
-                STL: steals,
-                BLK: blocks,
-                FG_PCT: fgPercentage,
-                FG3_PCT: threePointPercentage,
-                FT_PCT: ftPercentage,
-                PLUS_MINUS: 0  // Default value as it's not directly calculated
-            };
-
-            // Make API request to backend
-            const response = await fetch('https://budgetbackenddeploy1.onrender.com/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(teamStats)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const predictedWins = data.predicted_wins;
+            // Use the frontend's calculateExpectedWins function instead of API call
+            const predictedWins = calculateExpectedWins(this.selectedPlayers);
 
             console.log('Predicted Wins:', predictedWins);
 
@@ -379,18 +353,18 @@ function calculateExpectedWins(selectedPlayers) {
         };
 
         // Calculate predicted wins using the trained model coefficients
-        let predictedWins = 20 +  // Lower base value for more realistic predictions
-            (teamStats.points * 0.2345) +  // Points coefficient
-            (teamStats.rebounds * 0.1234) +  // Rebounds coefficient
-            (teamStats.assists * 0.1567) +  // Assists coefficient
-            (teamStats.steals * 0.0891) +  // Steals coefficient
-            (teamStats.blocks * 0.0678) +  // Blocks coefficient
-            (teamStats.fg_pct * 0.3456) +  // FG% coefficient
-            (teamStats.ft_pct * 0.1123) +  // FT% coefficient
-            (teamStats.three_pct * 0.1789);  // 3P% coefficient
+        let predictedWins = 5 +  // Lower base value to 5 wins
+            (teamStats.points * 0.58625) +  // Points coefficient (0.2345 * 2.5)
+            (teamStats.rebounds * 0.3085) +  // Rebounds coefficient (0.1234 * 2.5)
+            (teamStats.assists * 0.39175) +  // Assists coefficient (0.1567 * 2.5)
+            (teamStats.steals * 0.22275) +  // Steals coefficient (0.0891 * 2.5)
+            (teamStats.blocks * 0.1695) +  // Blocks coefficient (0.0678 * 2.5)
+            (teamStats.fg_pct * 0.864) +  // FG% coefficient (0.3456 * 2.5)
+            (teamStats.ft_pct * 0.28075) +  // FT% coefficient (0.1123 * 2.5)
+            (teamStats.three_pct * 0.44725);  // 3P% coefficient (0.1789 * 2.5)
 
         // Scale up the prediction since bench players will contribute some wins
-        predictedWins = predictedWins * 1.2;  // Reduced scaling factor
+        predictedWins = predictedWins * 1.2;  // Keep the same scaling factor
         
         // Ensure prediction stays within reasonable bounds and round to nearest integer
         return Math.round(Math.max(8, Math.min(74, predictedWins)));
