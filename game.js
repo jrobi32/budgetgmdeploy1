@@ -352,16 +352,16 @@ function calculateExpectedWins(selectedPlayers) {
                 sum + parseFloat(p['Player Impact Estimate (Avg)']), 0) / selectedPlayers.length
         };
 
-        // Calculate predicted wins using the trained model coefficients
+        // Calculate predicted wins using the specified coefficients
         let predictedWins = 5 +  // Keep base value at 5 wins
-            (teamStats.points * 0.39083) +  // Points coefficient (0.58625 / 1.5)
-            (teamStats.rebounds * 0.20567) +  // Rebounds coefficient (0.3085 / 1.5)
-            (teamStats.assists * 0.26117) +  // Assists coefficient (0.39175 / 1.5)
-            (teamStats.steals * 0.14850) +  // Steals coefficient (0.22275 / 1.5)
-            (teamStats.blocks * 0.11300) +  // Blocks coefficient (0.1695 / 1.5)
-            (teamStats.fg_pct * 0.57600) +  // FG% coefficient (0.864 / 1.5)
-            (teamStats.ft_pct * 0.18717) +  // FT% coefficient (0.28075 / 1.5)
-            (teamStats.three_pct * 0.29817);  // 3P% coefficient (0.44725 / 1.5)
+            (teamStats.points * 0.4) +  // Points coefficient
+            (teamStats.rebounds * 0.21) +  // Rebounds coefficient
+            (teamStats.assists * 0.26) +  // Assists coefficient
+            (teamStats.steals * 0.15) +  // Steals coefficient
+            (teamStats.blocks * 0.11) +  // Blocks coefficient
+            (teamStats.fg_pct * 0.5) +  // FG% coefficient
+            (teamStats.ft_pct * 0.18) +  // FT% coefficient
+            (teamStats.three_pct * 0.26);  // 3P% coefficient
 
         // Scale up the prediction since bench players will contribute some wins
         predictedWins = predictedWins * 1.2;  // Keep the same scaling factor
