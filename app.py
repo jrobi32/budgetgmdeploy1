@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import joblib
 import numpy as np
 import pandas as pd
 import logging
@@ -10,64 +9,42 @@ import os
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Set fixed random seed for reproducibility
-np.random.seed(42)
-
 app = Flask(__name__)
 # Enable CORS for all routes
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Initialize model and scaler as None
-model = None
-scaler = None
-
-# Try to load the model and scaler
-try:
-    model = joblib.load('best_model.joblib')
-    scaler = joblib.load('scaler.joblib')
-    logger.info("Successfully loaded model and scaler")
-except FileNotFoundError as e:
-    logger.warning(f"Model files not found: {str(e)}")
-    logger.warning("Please upload best_model.joblib and scaler.joblib to the server")
-except Exception as e:
-    logger.error(f"Error loading model files: {str(e)}")
-
 def predict_team_wins(player_stats):
-    """Predict wins for a given team's player stats"""
+    """Predict wins for a given team's player stats using a simple formula"""
     try:
         # Calculate team totals
         team_totals = {
-            'PTS': sum(float(p['Points Per Game (Avg)']) for p in player_stats),
-            'REB': sum(float(p['Rebounds Per Game (Avg)']) for p in player_stats),
-            'AST': sum(float(p['Assists Per Game (Avg)']) for p in player_stats),
-            'STL': sum(float(p.get('Steals Per Game (Avg)', 0)) for p in player_stats),
-            'BLK': sum(float(p.get('Blocks Per Game (Avg)', 0)) for p in player_stats),
-            'FG_PCT': np.mean([float(p.get('Field Goal % (Avg)', 45)) for p in player_stats]),
-            'FG3_PCT': np.mean([float(p.get('Three Point % (Avg)', 35)) for p in player_stats]),
-            'FT_PCT': np.mean([float(p.get('Free Throw % (Avg)', 75)) for p in player_stats]),
-            'PLUS_MINUS': np.mean([float(p.get('Rating', 50)) - 50 for p in player_stats]),
-            'MIN': 240,  # Assuming 48 minutes per position * 5 positions
-            'GP': np.mean([float(p.get('Games Played (Avg)', 70)) for p in player_stats])
+            'points': sum(float(p['Points Per Game (Avg)']) for p in player_stats),
+            'rebounds': sum(float(p['Rebounds Per Game (Avg)']) for p in player_stats),
+            'assists': sum(float(p['Assists Per Game (Avg)']) for p in player_stats),
+            'steals': sum(float(p.get('Steals Per Game (Avg)', 0)) for p in player_stats),
+            'blocks': sum(float(p.get('Blocks Per Game (Avg)', 0)) for p in player_stats),
+            'fg_pct': np.mean([float(p.get('Field Goal % (Avg)', 45)) for p in player_stats]),
+            'ft_pct': np.mean([float(p.get('Free Throw % (Avg)', 75)) for p in player_stats]),
+            'three_pct': np.mean([float(p.get('Three Point % (Avg)', 35)) for p in player_stats])
         }
         
         logger.debug("Team totals: %s", team_totals)
         
-        # Calculate derived features
-        team_totals['EFFICIENCY'] = (team_totals['PTS'] + team_totals['REB'] + team_totals['AST'] + 
-                                   team_totals['STL'] + team_totals['BLK']) / 5
+        # Simple win prediction formula based on key stats
+        base_wins = 41  # League average
+        efficiency_bonus = (
+            (team_totals['points'] * 0.2) +
+            (team_totals['rebounds'] * 0.1) +
+            (team_totals['assists'] * 0.1) +
+            (team_totals['steals'] * 0.05) +
+            (team_totals['blocks'] * 0.05) +
+            ((team_totals['fg_pct'] - 45) * 0.5) +
+            ((team_totals['ft_pct'] - 75) * 0.2) +
+            ((team_totals['three_pct'] - 35) * 0.3)
+        ) / 5
         
-        # Prepare features for prediction
-        features = pd.DataFrame([team_totals])
-        
-        # Make prediction
-        if model is not None and scaler is not None:
-            predicted_wins = model.predict(features)[0]
-            return round(predicted_wins)
-        else:
-            # Fallback calculation if model is not available
-            base_wins = 41
-            efficiency_bonus = (team_totals['EFFICIENCY'] - 20) * 0.5
-            return round(base_wins + efficiency_bonus)
+        predicted_wins = base_wins + efficiency_bonus
+        return round(max(20, min(62, predicted_wins)))
             
     except Exception as e:
         logger.error("Error in prediction: %s", str(e), exc_info=True)
@@ -79,28 +56,11 @@ def predict():
         data = request.json
         logger.debug(f"Received data: {data}")
         
-        # Extract features in the correct order
-        features = ['PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT', 'FT_PCT', 'PLUS_MINUS']
-        input_data = np.array([[data[feature] for feature in features]])
-        
-        # Scale the input data
-        if scaler is not None:
-            scaled_data = scaler.transform(input_data)
-        else:
-            scaled_data = input_data
-        
-        # Make prediction
-        if model is not None:
-            prediction = model.predict(scaled_data)[0]
-        else:
-            # Fallback prediction
-            prediction = 41
-        
-        # Ensure prediction is within reasonable bounds
-        prediction = max(20, min(62, prediction))
+        # Make prediction using the simplified function
+        prediction = predict_team_wins(data)
         
         logger.debug(f"Prediction: {prediction}")
-        return jsonify({'predicted_wins': round(prediction)})
+        return jsonify({'predicted_wins': prediction})
         
     except Exception as e:
         logger.error(f"Error in prediction: {str(e)}")
@@ -111,8 +71,7 @@ def health_check():
     """Health check endpoint"""
     return jsonify({
         'status': 'ok',
-        'model_loaded': model is not None,
-        'scaler_loaded': scaler is not None
+        'message': 'Service is running with simplified prediction model'
     })
 
 if __name__ == '__main__':
