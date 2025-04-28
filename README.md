@@ -1,6 +1,14 @@
-# BudgetGM - Ballin' on a Budget
+# NBA Budget Game
 
-A web application that allows users to build their own NBA team with a $15 budget and predict their season performance.
+A web application that allows users to build their dream NBA team within a budget and predict their season performance.
+
+## Features
+- Select players within a $15 budget
+- Real-time team building
+- Win prediction based on player statistics
+- Modern, responsive UI
+
+Last updated: 2024-04-28 12:00 PM
 
 ## Frontend Files
 - `index.html` - Main HTML structure
