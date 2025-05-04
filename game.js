@@ -26,7 +26,7 @@ class NBABudgetGame {
                     'Content-Type': 'application/json'
                 },
                 mode: 'cors',
-                credentials: 'include'
+                credentials: 'same-origin'
             });
             
             console.log('Response status:', response.status);
