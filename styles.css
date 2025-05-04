@@ -266,11 +266,29 @@ header h1 {
 
 .players-container {
     display: flex;
+    flex-direction: row;
     flex-wrap: nowrap;
     gap: 20px;
     overflow-x: auto;
     padding: 10px;
     width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-blue) var(--light-blue);
+}
+
+.players-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.players-container::-webkit-scrollbar-track {
+    background: var(--light-blue);
+    border-radius: 4px;
+}
+
+.players-container::-webkit-scrollbar-thumb {
+    background: var(--primary-blue);
+    border-radius: 4px;
 }
 
 .results-container {
