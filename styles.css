@@ -150,6 +150,14 @@ header h1 {
     color: white;
 }
 
+.team-section h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    font-size: 1.2em;
+    border-bottom: 2px solid var(--secondary-orange);
+    padding-bottom: 0.5rem;
+}
+
 .team-section {
     background: var(--white);
     padding: 1rem;
