@@ -29,6 +29,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    position: relative;
 }
 
 header {
@@ -319,6 +320,59 @@ header h1 {
     margin: 20px 0;
 }
 
+/* How to Play Styles */
+.how-to-play {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+}
+
+.how-to-play-btn {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.how-to-play-btn:hover {
+    background-color: var(--dark-blue);
+}
+
+.how-to-play-content {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    width: 300px;
+    background-color: var(--white);
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-left: 10px;
+    border: 2px solid var(--primary-blue);
+}
+
+.how-to-play-content h2 {
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+    font-size: 18px;
+    border-bottom: 2px solid var(--secondary-orange);
+    padding-bottom: 10px;
+}
+
+.how-to-play-content p {
+    color: var(--dark-gray);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
 @media (max-width: 1200px) {
     .players-grid {
         max-width: 100%;
@@ -338,6 +392,21 @@ header h1 {
     
     .player-card {
         width: 140px;
+    }
+
+    .how-to-play {
+        position: static;
+        transform: none;
+        margin: 20px auto;
+        text-align: center;
+    }
+
+    .how-to-play-content {
+        position: static;
+        left: auto;
+        top: auto;
+        width: 100%;
+        margin: 10px 0;
     }
 }
 
