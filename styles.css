@@ -246,7 +246,6 @@ header h1 {
 
 /* How to Play Styles */
 .how-to-play {
-    position: static;
     background: var(--white);
     padding: 1rem;
     border-radius: 8px;
@@ -255,6 +254,7 @@ header h1 {
     height: 100%;
     display: flex;
     flex-direction: column;
+    grid-column: 1;
 }
 
 .how-to-play-btn {
@@ -271,9 +271,12 @@ header h1 {
     margin-bottom: 1rem;
 }
 
+.how-to-play-btn:hover {
+    background-color: var(--light-blue);
+}
+
 .how-to-play-content {
     display: none;
-    position: static;
     width: 100%;
     background-color: var(--white);
     padding: 1rem;
