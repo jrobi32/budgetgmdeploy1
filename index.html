@@ -3,55 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ballin' on a Budget | BudgetGM</title>
+    <title>NBA BudgetGM</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Ballin' on a Budget | BudgetGM</h1>
-            <p>Build your team with a $15 budget. Select 5 players.</p>
-        </header>
-
-        <div class="game-container">
-            <div class="players-section">
-                <h2>Available Players</h2>
-                <div class="players-grid">
-                    <!-- Players will be dynamically added here -->
-                </div>
+        <div class="left-sidebar">
+            <button id="how-to-play-btn" class="how-to-play-btn">How to Play</button>
+            <div id="how-to-play-content" class="how-to-play-content">
+                <h2>Welcome to the NBA BudgeGM game!</h2>
+                <p>You have $15 to make the best possible NBA team with the listed players. You can pick any players from any category, as long as you select 5 total players and spend no more than $15. Once you've selected them, scroll down to the bottom and click "Simulate Season." Everyday this pool will update, so come back tomorrow to compete to make the best team again!</p>
             </div>
-
-            <div class="team-section">
+        </div>
+        <div class="main-content">
+            <h1>NBA BudgetGM</h1>
+            <div class="budget-display">
+                <h2>Remaining Budget: $<span id="remaining-budget">15</span></h2>
+            </div>
+            <div class="team-display">
                 <h2>Your Team</h2>
-                <div class="team-display">
-                    <!-- Selected players will be shown here -->
-                </div>
-                <div class="budget-display">
-                    Remaining Budget: $<span id="remaining-budget">15</span>
-                </div>
+                <div class="selected-players"></div>
             </div>
+            <div class="players-grid"></div>
+            <button id="simulate-button" class="simulate-button">Simulate Season</button>
+            <div class="results-section"></div>
         </div>
-
-        <div class="results-section" style="display: none;">
-            <h2>Final Team</h2>
-            <div class="final-team">
-                <!-- Final team will be shown here -->
-            </div>
-            <div class="team-stats">
-                <!-- Team stats will be shown here -->
-            </div>
-            <div class="season-results">
-                <!-- Season results will be shown here -->
-            </div>
-            <div class="player-stats">
-                <!-- Player statistics will be shown here -->
-            </div>
-        </div>
-
-        <button id="simulate-button" style="display: none;">Simulate Season</button>
     </div>
-    <div id="results"></div>
-    <div class="modal-backdrop"></div>
     <script src="game.js"></script>
 </body>
 </html> 

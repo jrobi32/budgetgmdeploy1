@@ -11,6 +11,18 @@ class NBABudgetGame {
         this.simulateButton = document.getElementById('simulate-button');
         this.resultsSection = document.querySelector('.results-section');
         
+        // Add event listener for How to Play button
+        const howToPlayBtn = document.getElementById('how-to-play-btn');
+        const howToPlayContent = document.getElementById('how-to-play-content');
+        
+        howToPlayBtn.addEventListener('click', () => {
+            if (howToPlayContent.style.display === 'block') {
+                howToPlayContent.style.display = 'none';
+            } else {
+                howToPlayContent.style.display = 'block';
+            }
+        });
+        
         this.loadPlayers();
         this.setupEventListeners();
     }
