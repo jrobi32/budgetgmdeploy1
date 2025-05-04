@@ -11,15 +11,27 @@ class NBABudgetGame {
         this.simulateButton = document.getElementById('simulate-button');
         this.resultsSection = document.querySelector('.results-section');
         
-        // Add event listener for How to Play button
+        // Add event listeners for How to Play and How It Works buttons
         const howToPlayBtn = document.getElementById('how-to-play-btn');
         const howToPlayContent = document.getElementById('how-to-play-content');
+        const howItWorksBtn = document.getElementById('how-it-works-btn');
+        const howItWorksContent = document.getElementById('how-it-works-content');
         
         howToPlayBtn.addEventListener('click', () => {
             if (howToPlayContent.style.display === 'block') {
                 howToPlayContent.style.display = 'none';
             } else {
                 howToPlayContent.style.display = 'block';
+                howItWorksContent.style.display = 'none';
+            }
+        });
+
+        howItWorksBtn.addEventListener('click', () => {
+            if (howItWorksContent.style.display === 'block') {
+                howItWorksContent.style.display = 'none';
+            } else {
+                howItWorksContent.style.display = 'block';
+                howToPlayContent.style.display = 'none';
             }
         });
         

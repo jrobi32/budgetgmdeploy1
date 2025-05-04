@@ -20,6 +20,11 @@
                     <h2>Welcome to the NBA BudgeGM game!</h2>
                     <p>You have $15 to make the best possible NBA team with the listed players. You can pick any players from any category, as long as you select 5 total players and spend no more than $15. Once you've selected them, scroll down to the bottom and click "Simulate Season." Everyday this pool will update, so come back tomorrow to compete to make the best team again!</p>
                 </div>
+                <button id="how-it-works-btn" class="how-to-play-btn">How It Works</button>
+                <div id="how-it-works-content" class="how-to-play-content">
+                    <h2>Game Mechanics</h2>
+                    <p>To make this game, I pulled data for hundreds of NBA players, inluding every player who averaged over 4 PPG, and programmatically gave them a rating between 0 and 100. I then divided them up into dollar categories based on that rating. The season is simulated using a model that adds wins to the chosen starting 5's season based on a range of stats. This model's coefficients used to add wins to a simulated season currently derives its coefficients from a combination of a linear regression model and trial and error simulation to give its projection, but I am always looking for ways to improve the model to give more realistic results.</p>
+                </div>
             </div>
 
             <div class="players-section">
