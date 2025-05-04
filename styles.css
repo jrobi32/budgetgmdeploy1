@@ -65,7 +65,7 @@ header h1 {
 
 .players-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 20px;
     padding: 20px;
     background: var(--light-blue);
@@ -371,13 +371,13 @@ header h1 {
 
 @media (max-width: 1200px) {
     .players-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 @media (max-width: 768px) {
     .players-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .how-to-play {
