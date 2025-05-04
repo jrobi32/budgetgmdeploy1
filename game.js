@@ -12,26 +12,26 @@ class NBABudgetGame {
         this.resultsSection = document.querySelector('.results-section');
         
         // Add event listeners for How to Play and How It Works buttons
-        const howToPlayBtn = document.getElementById('how-to-play-btn');
-        const howToPlayContent = document.getElementById('how-to-play-content');
-        const howItWorksBtn = document.getElementById('how-it-works-btn');
-        const howItWorksContent = document.getElementById('how-it-works-content');
-        const quickTipsBtn = document.getElementById('quick-tips-btn');
-        const quickTipsContent = document.getElementById('quick-tips-content');
+        this.howToPlayBtn = document.getElementById('how-to-play-btn');
+        this.howToPlayContent = document.getElementById('how-to-play-content');
+        this.howItWorksBtn = document.getElementById('how-it-works-btn');
+        this.howItWorksContent = document.getElementById('how-it-works-content');
+        this.quickTipsBtn = document.getElementById('quick-tips-btn');
+        this.quickTipsContent = document.getElementById('quick-tips-content');
         
-        howToPlayBtn.addEventListener('click', () => {
+        this.howToPlayBtn.addEventListener('click', () => {
             this.howToPlayContent.style.display = this.howToPlayContent.style.display === 'block' ? 'none' : 'block';
             this.howItWorksContent.style.display = 'none';
             this.quickTipsContent.style.display = 'none';
         });
 
-        howItWorksBtn.addEventListener('click', () => {
+        this.howItWorksBtn.addEventListener('click', () => {
             this.howItWorksContent.style.display = this.howItWorksContent.style.display === 'block' ? 'none' : 'block';
             this.howToPlayContent.style.display = 'none';
             this.quickTipsContent.style.display = 'none';
         });
 
-        quickTipsBtn.addEventListener('click', () => {
+        this.quickTipsBtn.addEventListener('click', () => {
             this.quickTipsContent.style.display = this.quickTipsContent.style.display === 'block' ? 'none' : 'block';
             this.howToPlayContent.style.display = 'none';
             this.howItWorksContent.style.display = 'none';
