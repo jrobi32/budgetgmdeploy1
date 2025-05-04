@@ -323,6 +323,14 @@ class NBABudgetGame {
             document.body.appendChild(resultsDiv);
         }
 
+        // Create overlay if it doesn't exist
+        let overlay = document.getElementById('results-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'results-overlay';
+            document.body.appendChild(overlay);
+        }
+
         try {
             resultsDiv.innerHTML = `
                 <div class="results-container">
@@ -338,8 +346,8 @@ class NBABudgetGame {
                     <button onclick="game.closeResults()" class="close-button">Close</button>
                 </div>
             `;
-            resultsDiv.style.display = 'block';
             resultsDiv.classList.add('active');
+            overlay.classList.add('active');
         } catch (error) {
             console.error('Error displaying results:', error);
             alert('Error displaying results. Please try again.');
@@ -348,9 +356,12 @@ class NBABudgetGame {
 
     closeResults() {
         const resultsDiv = document.getElementById('results');
+        const overlay = document.getElementById('results-overlay');
         if (resultsDiv) {
-            resultsDiv.style.display = 'none';
             resultsDiv.classList.remove('active');
+        }
+        if (overlay) {
+            overlay.classList.remove('active');
         }
     }
 
