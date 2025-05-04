@@ -16,23 +16,25 @@ class NBABudgetGame {
         const howToPlayContent = document.getElementById('how-to-play-content');
         const howItWorksBtn = document.getElementById('how-it-works-btn');
         const howItWorksContent = document.getElementById('how-it-works-content');
+        const quickTipsBtn = document.getElementById('quick-tips-btn');
+        const quickTipsContent = document.getElementById('quick-tips-content');
         
         howToPlayBtn.addEventListener('click', () => {
-            if (howToPlayContent.style.display === 'block') {
-                howToPlayContent.style.display = 'none';
-            } else {
-                howToPlayContent.style.display = 'block';
-                howItWorksContent.style.display = 'none';
-            }
+            this.howToPlayContent.style.display = this.howToPlayContent.style.display === 'block' ? 'none' : 'block';
+            this.howItWorksContent.style.display = 'none';
+            this.quickTipsContent.style.display = 'none';
         });
 
         howItWorksBtn.addEventListener('click', () => {
-            if (howItWorksContent.style.display === 'block') {
-                howItWorksContent.style.display = 'none';
-            } else {
-                howItWorksContent.style.display = 'block';
-                howToPlayContent.style.display = 'none';
-            }
+            this.howItWorksContent.style.display = this.howItWorksContent.style.display === 'block' ? 'none' : 'block';
+            this.howToPlayContent.style.display = 'none';
+            this.quickTipsContent.style.display = 'none';
+        });
+
+        quickTipsBtn.addEventListener('click', () => {
+            this.quickTipsContent.style.display = this.quickTipsContent.style.display === 'block' ? 'none' : 'block';
+            this.howToPlayContent.style.display = 'none';
+            this.howItWorksContent.style.display = 'none';
         });
         
         this.loadPlayers();
