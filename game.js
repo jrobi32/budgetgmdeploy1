@@ -176,8 +176,12 @@ class NBABudgetGame {
             this.teamDisplay.appendChild(playerElement);
         });
 
-        // Show/hide simulate button
-        this.simulateButton.style.display = this.selectedPlayers.length === 5 ? 'block' : 'none';
+        // Update simulate button state
+        if (this.selectedPlayers.length === 5) {
+            this.simulateButton.classList.add('active');
+        } else {
+            this.simulateButton.classList.remove('active');
+        }
         
         // Update the display without re-randomizing
         this.displayPlayers();
