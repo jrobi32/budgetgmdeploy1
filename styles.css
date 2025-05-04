@@ -54,7 +54,7 @@ header h1 {
 
 .game-container {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 2fr 1fr;
     gap: 1rem;
     margin-bottom: 1rem;
     flex: 1;
@@ -246,58 +246,71 @@ header h1 {
 
 /* How to Play Styles */
 .how-to-play {
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    z-index: 100;
+    position: static;
+    background: var(--white);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--primary-blue);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .how-to-play-btn {
     background-color: var(--white);
     color: var(--primary-blue);
     border: 2px solid var(--secondary-orange);
-    padding: 10px 20px;
+    padding: 0.75rem;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
     transition: all 0.3s;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    width: 150px;
-}
-
-.how-to-play-btn:hover {
-    background-color: var(--light-blue);
+    width: 100%;
+    margin-bottom: 1rem;
 }
 
 .how-to-play-content {
     display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 150px;
+    position: static;
+    width: 100%;
     background-color: var(--white);
-    padding: 20px;
+    padding: 1rem;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-top: 10px;
     border: 2px solid var(--primary-blue);
+    flex: 1;
+    overflow-y: auto;
 }
 
 .how-to-play-content h2 {
     color: var(--primary-blue);
-    margin-bottom: 15px;
-    font-size: 18px;
+    margin-bottom: 1rem;
+    font-size: 1.2em;
     border-bottom: 2px solid var(--secondary-orange);
-    padding-bottom: 10px;
+    padding-bottom: 0.5rem;
 }
 
 .how-to-play-content p {
     color: var(--dark-gray);
-    font-size: 14px;
+    font-size: 0.9em;
     line-height: 1.5;
+    margin-bottom: 0.5rem;
 }
 
 /* Responsive adjustments */
+@media (max-width: 1200px) {
+    .game-container {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .how-to-play {
+        grid-column: 1 / -1;
+        height: auto;
+    }
+}
+
 @media (max-width: 768px) {
     .game-container {
         grid-template-columns: 1fr;
@@ -305,18 +318,6 @@ header h1 {
     
     .player-card {
         width: 160px;
-    }
-
-    .how-to-play {
-        position: static;
-        margin: 20px auto;
-        text-align: center;
-    }
-
-    .how-to-play-content {
-        position: static;
-        width: 100%;
-        margin: 10px 0;
     }
 }
 
