@@ -64,14 +64,13 @@ header h1 {
 }
 
 .players-grid {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
     gap: 20px;
     padding: 20px;
     background: var(--light-blue);
     border-radius: 8px;
     margin-top: 20px;
-    width: 100%;
 }
 
 .player-card {
@@ -88,8 +87,6 @@ header h1 {
     gap: 10px;
     position: relative;
     border: 2px solid var(--primary-blue);
-    min-width: 180px;
-    flex-shrink: 0;
 }
 
 .player-card:hover {
@@ -126,23 +123,17 @@ header h1 {
 }
 
 .player-card img {
-    width: 100%;
-    height: auto;
-    max-width: 120px;
+    width: 120px;
+    height: 120px;
     object-fit: cover;
     border-radius: 50%;
     border: 3px solid var(--primary-blue);
-    aspect-ratio: 1/1;
 }
 
 .player-card h3 {
     margin: 0;
-    font-size: clamp(0.9em, 2vw, 1.1em);
+    font-size: 1.1em;
     color: var(--primary-blue);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
 }
 
 .player-card .price {
@@ -151,7 +142,6 @@ header h1 {
     padding: 5px 10px;
     border-radius: 15px;
     font-weight: bold;
-    font-size: clamp(0.8em, 1.5vw, 1em);
 }
 
 .team-display {
@@ -356,20 +346,20 @@ header h1 {
 }
 
 .how-to-play-btn {
-    background-color: var(--primary-blue);
-    color: var(--white);
-    border: none;
+    background-color: var(--white);
+    color: var(--primary-blue);
+    border: 2px solid var(--secondary-orange);
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     width: 150px;
 }
 
 .how-to-play-btn:hover {
-    background-color: var(--dark-blue);
+    background-color: var(--light-blue);
 }
 
 .how-to-play-content {
@@ -401,16 +391,14 @@ header h1 {
 }
 
 @media (max-width: 1200px) {
-    .player-card {
-        min-width: 160px;
-        padding: 12px;
+    .players-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 @media (max-width: 768px) {
-    .player-card {
-        min-width: 140px;
-        padding: 10px;
+    .players-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .how-to-play {
