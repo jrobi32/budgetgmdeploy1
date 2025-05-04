@@ -17,19 +17,33 @@ class NBABudgetGame {
 
     async loadPlayers() {
         try {
-            const response = await fetch('nba_players_final_updated.csv');
+            // Fetch the daily player pool from the backend
+            const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/players');
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error('Failed to fetch players');
             }
-            const csvText = await response.text();
-            const players = this.parseCSV(csvText);
-            console.log('Loaded players:', players.length);
+            const players = await response.json();
+            
+            // Group players by dollar value
+            const playersByDollar = {};
+            players.forEach(player => {
+                const dollarValue = player['Dollar Value'];
+                if (!playersByDollar[dollarValue]) {
+                    playersByDollar[dollarValue] = [];
+                }
+                playersByDollar[dollarValue].push(player);
+            });
+            
+            // Update the game state
+            this.playersByDollar = playersByDollar;
             this.availablePlayers = players;
+            
+            // Update the UI
             this.initializeDisplayedPlayers();
             this.displayPlayers();
         } catch (error) {
-            console.error('Error loading players:', error);
-            this.playersGrid.innerHTML = `<div class="error">Error loading players: ${error.message}</div>`;
+            console.error('Error initializing game:', error);
+            alert('Failed to load players. Please try refreshing the page.');
         }
     }
 
