@@ -64,84 +64,79 @@ header h1 {
 }
 
 .players-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 20px;
     padding: 20px;
-    background: var(--light-blue);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.value-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.value-section h3 {
+    color: #002B5C;
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.players-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    margin-top: 20px;
 }
 
 .player-card {
-    background: var(--white);
+    flex: 0 0 auto;
+    width: 200px;
+    background: white;
     border-radius: 8px;
     padding: 15px;
     text-align: center;
-    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-    border: 2px solid var(--primary-blue);
+    cursor: pointer;
 }
 
 .player-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.player-card.selected {
-    background: var(--secondary-orange);
-    border: 2px solid var(--primary-blue);
-    cursor: not-allowed;
-    color: var(--white);
-}
-
-.player-card.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: var(--primary-blue);
-    color: var(--white);
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-.player-card.selected:hover {
-    transform: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .player-card img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 3px solid var(--primary-blue);
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
 }
 
 .player-card h3 {
     margin: 0;
+    color: #002B5C;
     font-size: 1.1em;
-    color: var(--primary-blue);
 }
 
 .player-card .price {
-    background: var(--primary-blue);
-    color: var(--white);
-    padding: 5px 10px;
-    border-radius: 15px;
+    color: #FF6B00;
     font-weight: bold;
+    margin-top: 10px;
+}
+
+.player-card.selected {
+    background: #002B5C;
+    color: white;
+}
+
+.player-card.selected h3,
+.player-card.selected .price {
+    color: white;
 }
 
 .team-display {
@@ -289,15 +284,10 @@ header h1 {
     line-height: 1.5;
 }
 
-@media (max-width: 1200px) {
-    .players-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .players-grid {
-        grid-template-columns: repeat(3, 1fr);
+    .player-card {
+        width: 160px;
     }
 
     .how-to-play {
@@ -310,5 +300,11 @@ header h1 {
         position: static;
         width: 100%;
         margin: 10px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .player-card {
+        width: 140px;
     }
 } 
