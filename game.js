@@ -102,13 +102,17 @@ class NBABudgetGame {
             
             const playersContainer = document.createElement('div');
             playersContainer.className = 'players-container';
+            playersContainer.style.display = 'flex';
+            playersContainer.style.flexWrap = 'nowrap';
+            playersContainer.style.overflowX = 'auto';
+            playersContainer.style.gap = '20px';
+            playersContainer.style.padding = '10px';
             
             valuePlayers.forEach(player => {
                 const playerCard = document.createElement('div');
                 playerCard.className = 'player-card';
                 const isSelected = this.selectedPlayers.some(p => p['Player ID'] === player['Player ID']);
                 
-                // Use a more reliable image source
                 const imageUrl = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${player['Player ID']}.png`;
                 
                 if (isSelected) {
