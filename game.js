@@ -22,6 +22,9 @@ class NBABudgetGame {
             this.nicknameInput.disabled = true;
             this.saveNicknameBtn.disabled = true;
         }
+
+        // Check if user has already submitted today
+        this.checkDailySubmission();
         
         // Add event listener for nickname save
         this.saveNicknameBtn.addEventListener('click', () => this.saveNickname());
@@ -54,6 +57,17 @@ class NBABudgetGame {
         
         this.loadPlayers();
         this.setupEventListeners();
+    }
+
+    checkDailySubmission() {
+        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+        const today = new Date().toDateString();
+        
+        if (lastSubmission === today) {
+            this.simulateButton.disabled = true;
+            this.simulateButton.textContent = 'Team Already Submitted Today';
+            this.simulateButton.classList.remove('active');
+        }
     }
 
     async loadPlayers() {
@@ -289,14 +303,26 @@ class NBABudgetGame {
 
     async simulateSeason() {
         try {
+            // Check if user has already submitted today
+            const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+            const today = new Date().toDateString();
+            
+            if (lastSubmission === today) {
+                alert('You have already submitted a team today. Come back tomorrow!');
+                return;
+            }
+
+            // Save submission date
+            localStorage.setItem('budgetgm_last_submission', today);
+
             let points = 0;
             let rebounds = 0;
             let assists = 0;
             let steals = 0;
             let blocks = 0;
-            let fgPercentages = [];  // Array to store FG percentages
-            let ftPercentages = [];  // Array to store FT percentages
-            let threePointPercentages = [];  // Array to store 3PT percentages
+            let fgPercentages = [];
+            let ftPercentages = [];
+            let threePointPercentages = [];
 
             // Calculate team totals
             this.selectedPlayers.forEach(player => {
@@ -306,7 +332,6 @@ class NBABudgetGame {
                 steals += parseFloat(player['Steals Per Game (Avg)']);
                 blocks += parseFloat(player['Blocks Per Game (Avg)']);
                 
-                // Store percentages in arrays
                 fgPercentages.push(parseFloat(player['Field Goal % (Avg)']));
                 ftPercentages.push(parseFloat(player['Free Throw % (Avg)']));
                 threePointPercentages.push(parseFloat(player['Three Point % (Avg)']));
@@ -317,10 +342,7 @@ class NBABudgetGame {
             const ftPercentage = ftPercentages.reduce((a, b) => a + b, 0) / ftPercentages.length;
             const threePointPercentage = threePointPercentages.reduce((a, b) => a + b, 0) / threePointPercentages.length;
 
-            // Use the frontend's calculateExpectedWins function instead of API call
             const predictedWins = calculateExpectedWins(this.selectedPlayers);
-
-            console.log('Predicted Wins:', predictedWins);
 
             // Format data for display
             const results = {
@@ -334,9 +356,13 @@ class NBABudgetGame {
             // Display the results
             this.displayResults(results);
 
+            // Disable the submit button after successful submission
+            this.simulateButton.disabled = true;
+            this.simulateButton.textContent = 'Team Submitted';
+            this.simulateButton.classList.remove('active');
+
         } catch (error) {
             console.error('Error in season simulation:', error);
-            // Display default results if simulation fails
             this.displayResults({
                 wins: 8,
                 total_ppg: '100.0',
