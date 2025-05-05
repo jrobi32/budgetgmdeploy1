@@ -219,6 +219,14 @@ class NBABudgetGame {
     }
 
     removePlayer(player) {
+        // Check if user has already submitted today
+        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+        const today = new Date().toDateString();
+        if (lastSubmission === today) {
+            alert('You have already submitted your team for today. Come back tomorrow!');
+            return;
+        }
+
         const index = this.selectedPlayers.findIndex(p => p['Player ID'] === player['Player ID']);
         if (index !== -1) {
             this.remainingBudget += parseInt(player['Dollar Value']);
@@ -279,6 +287,14 @@ class NBABudgetGame {
     }
 
     selectPlayer(player) {
+        // Check if user has already submitted today
+        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+        const today = new Date().toDateString();
+        if (lastSubmission === today) {
+            alert('You have already submitted your team for today. Come back tomorrow!');
+            return;
+        }
+
         // Check if player is already selected
         if (this.selectedPlayers.some(p => p['Player ID'] === player['Player ID'])) {
             alert('This player is already on your team!');
@@ -353,6 +369,23 @@ class NBABudgetGame {
                 outcome: this.getSeasonOutcome(predictedWins)
             };
 
+            // Store the submission in localStorage
+            const submission = {
+                date: today,
+                nickname: this.nickname,
+                players: this.selectedPlayers.map(p => ({
+                    id: p['Player ID'],
+                    name: p['Full Name'],
+                    value: p['Dollar Value']
+                })),
+                results: results
+            };
+
+            // Get existing submissions or initialize empty array
+            const submissions = JSON.parse(localStorage.getItem('budgetgm_submissions') || '[]');
+            submissions.push(submission);
+            localStorage.setItem('budgetgm_submissions', JSON.stringify(submissions));
+
             // Display the results
             this.displayResults(results);
 
@@ -360,6 +393,12 @@ class NBABudgetGame {
             this.simulateButton.disabled = true;
             this.simulateButton.textContent = 'Team Submitted';
             this.simulateButton.classList.remove('active');
+
+            // Disable player selection
+            this.playersGrid.querySelectorAll('.player-card').forEach(card => {
+                card.style.pointerEvents = 'none';
+                card.style.opacity = '0.7';
+            });
 
         } catch (error) {
             console.error('Error in season simulation:', error);
