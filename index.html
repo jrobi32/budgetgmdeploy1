@@ -43,13 +43,16 @@
 
             <div class="team-section">
                 <h2>Your Team</h2>
-                <button id="simulate-button">Simulate Season</button>
-                <div class="team-display">
-                    <!-- Selected players will be shown here -->
-                </div>
+                <div class="team-display"></div>
                 <div class="budget-display">
-                    Remaining Budget: $<span id="remaining-budget">15</span>
+                    <span>Remaining Budget: $<span id="remaining-budget">15</span></span>
                 </div>
+                <div class="nickname-section">
+                    <input type="text" id="nickname-input" placeholder="Enter a nickname" class="nickname-input">
+                    <button id="save-nickname" class="save-nickname-btn">Save</button>
+                </div>
+                <button id="simulate-button" class="simulate-button">Simulate Season</button>
+                <div class="results-section"></div>
             </div>
         </div>
 

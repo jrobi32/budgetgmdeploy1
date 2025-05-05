@@ -439,4 +439,45 @@ header h1 {
 
 #results-overlay.active {
     display: block;
+}
+
+.nickname-section {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    width: 100%;
+}
+
+.nickname-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 2px solid var(--primary-blue);
+    border-radius: 5px;
+    font-size: 1rem;
+    color: var(--dark-gray);
+}
+
+.nickname-input:focus {
+    outline: none;
+    border-color: var(--secondary-orange);
+}
+
+.save-nickname-btn {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.save-nickname-btn:hover {
+    background-color: var(--secondary-orange);
+}
+
+.save-nickname-btn:disabled {
+    background-color: var(--light-gray);
+    cursor: not-allowed;
 } 

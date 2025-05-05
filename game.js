@@ -11,6 +11,21 @@ class NBABudgetGame {
         this.simulateButton = document.getElementById('simulate-button');
         this.resultsSection = document.querySelector('.results-section');
         
+        // Add nickname elements
+        this.nicknameInput = document.getElementById('nickname-input');
+        this.saveNicknameBtn = document.getElementById('save-nickname');
+        
+        // Load nickname from localStorage
+        this.nickname = localStorage.getItem('budgetgm_nickname');
+        if (this.nickname) {
+            this.nicknameInput.value = this.nickname;
+            this.nicknameInput.disabled = true;
+            this.saveNicknameBtn.disabled = true;
+        }
+        
+        // Add event listener for nickname save
+        this.saveNicknameBtn.addEventListener('click', () => this.saveNickname());
+        
         // Add event listeners for How to Play and How It Works buttons
         this.howToPlayBtn = document.getElementById('how-to-play-btn');
         this.howToPlayContent = document.getElementById('how-to-play-content');
@@ -392,6 +407,16 @@ class NBABudgetGame {
 
     setupEventListeners() {
         this.simulateButton.addEventListener('click', () => this.simulateSeason());
+    }
+
+    saveNickname() {
+        const nickname = this.nicknameInput.value.trim();
+        if (nickname) {
+            this.nickname = nickname;
+            localStorage.setItem('budgetgm_nickname', nickname);
+            this.nicknameInput.disabled = true;
+            this.saveNicknameBtn.disabled = true;
+        }
     }
 }
 
