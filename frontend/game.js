@@ -460,7 +460,7 @@ class NBABudgetGame {
                 points: submission.players.reduce((sum, p) => sum + parseFloat(p['Points Per Game (Avg)']), 0).toFixed(1),
                 rebounds: submission.players.reduce((sum, p) => sum + parseFloat(p['Rebounds Per Game (Avg)']), 0).toFixed(1),
                 assists: submission.players.reduce((sum, p) => sum + parseFloat(p['Assists Per Game (Avg)']), 0).toFixed(1),
-                fg_pct: (submission.players.reduce((sum, p) => sum + parseFloat(p['Field Goal % (Avg)']), 0) / submission.players.length).toFixed(1),
+                fg_pct: submission.players.reduce((sum, p) => sum + parseFloat(p['Field Goal % (Avg)']), 0) / submission.players.length,
                 turnovers: submission.players.reduce((sum, p) => sum + parseFloat(p['TOV']), 0).toFixed(1)
             };
 
@@ -468,7 +468,7 @@ class NBABudgetGame {
                 PPG: ${teamStats.points}<br>
                 RPG: ${teamStats.rebounds}<br>
                 APG: ${teamStats.assists}<br>
-                FG%: ${(parseFloat(teamStats.fg_pct) * 100).toFixed(3)}%<br>
+                FG%: ${(teamStats.fg_pct * 100).toFixed(1)}%<br>
                 TOV: ${teamStats.turnovers}
             `;
 
