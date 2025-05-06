@@ -480,4 +480,85 @@ header h1 {
 .save-nickname-btn:disabled {
     background-color: var(--light-gray);
     cursor: not-allowed;
+}
+
+.leaderboard {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.leaderboard h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.leaderboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.user-rank {
+    background: #f0f7ff;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.user-rank h4 {
+    color: #0066cc;
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.top-submissions {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.top-submissions h4 {
+    color: #333;
+    margin: 0 0 10px 0;
+    font-size: 1em;
+}
+
+.submissions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.submission-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.submission-item.user-submission {
+    background: #e6f3ff;
+    border: 1px solid #0066cc;
+}
+
+.submission-item .rank {
+    font-weight: bold;
+    color: #666;
+    width: 40px;
+}
+
+.submission-item .nickname {
+    flex: 1;
+    color: #333;
+}
+
+.submission-item .wins {
+    color: #0066cc;
+    font-weight: bold;
 } 

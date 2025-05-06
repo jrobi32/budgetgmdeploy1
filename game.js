@@ -124,6 +124,11 @@ class NBABudgetGame {
             // Update the UI
             this.initializeDisplayedPlayers();
             this.displayPlayers();
+            
+            // If we have a saved team, update the display
+            if (this.selectedPlayers.length > 0) {
+                this.updateDisplay();
+            }
         } catch (error) {
             console.error('Error loading players:', error);
             this.playersGrid.innerHTML = `<div class="error">Error loading players: ${error.message}. Please try again later.</div>`;
@@ -435,44 +440,72 @@ class NBABudgetGame {
         }
     }
 
-    displayResults(data) {
-        // Create results div if it doesn't exist
-        let resultsDiv = document.getElementById('results');
-        if (!resultsDiv) {
-            resultsDiv = document.createElement('div');
-            resultsDiv.id = 'results';
-            document.body.appendChild(resultsDiv);
-        }
-
-        // Create overlay if it doesn't exist
-        let overlay = document.getElementById('results-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'results-overlay';
-            document.body.appendChild(overlay);
-        }
-
-        try {
-            resultsDiv.innerHTML = `
-                <div class="results-container">
-                    <h2>SEASON RESULTS</h2>
-                    <p>Projected Wins: ${data.wins}</p>
-                    <p>Team Stats:</p>
-                    <ul>
-                        <li>Points Per Game: ${data.total_ppg}</li>
-                        <li>Rebounds Per Game: ${data.total_rpg}</li>
-                        <li>Assists Per Game: ${data.total_apg}</li>
-                    </ul>
-                    <p>Season Outlook: ${data.outcome}</p>
-                    <button onclick="game.closeResults()" class="close-button">Close</button>
+    async displayResults(results) {
+        // Fetch leaderboard
+        const leaderboardResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors',
+            credentials: 'same-origin'
+        });
+        
+        const leaderboard = await leaderboardResponse.json();
+        
+        // Find user's rank
+        const userRank = leaderboard.findIndex(sub => sub.nickname === this.nickname) + 1;
+        
+        // Create results HTML
+        let resultsHTML = `
+            <h2>Simulation Results</h2>
+            <div class="results-content">
+                <div class="predicted-wins">
+                    <h3>Predicted Wins: ${results.wins.toFixed(1)}</h3>
                 </div>
-            `;
-            resultsDiv.classList.add('active');
-            overlay.classList.add('active');
-        } catch (error) {
-            console.error('Error displaying results:', error);
-            alert('Error displaying results. Please try again.');
-        }
+                <div class="team-stats">
+                    <h3>Team Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Points:</span>
+                            <span class="stat-value">${results.total_ppg}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Rebounds:</span>
+                            <span class="stat-value">${results.total_rpg}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Assists:</span>
+                            <span class="stat-value">${results.total_apg}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="leaderboard">
+                    <h3>Today's Leaderboard</h3>
+                    <div class="leaderboard-content">
+                        <div class="user-rank">
+                            <h4>Your Rank: #${userRank}</h4>
+                        </div>
+                        <div class="top-submissions">
+                            <h4>Top Submissions</h4>
+                            <div class="submissions-list">
+                                ${leaderboard.slice(0, 5).map(sub => `
+                                    <div class="submission-item ${sub.nickname === this.nickname ? 'user-submission' : ''}">
+                                        <span class="rank">#${sub.rank}</span>
+                                        <span class="nickname">${sub.nickname}</span>
+                                        <span class="wins">${sub.wins.toFixed(1)} wins</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        this.resultsSection.innerHTML = resultsHTML;
+        this.resultsSection.style.display = 'block';
     }
 
     closeResults() {
