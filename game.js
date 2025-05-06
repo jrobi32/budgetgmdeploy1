@@ -64,9 +64,8 @@ class NBABudgetGame {
         const today = new Date().toDateString();
         
         if (lastSubmission === today) {
-            this.simulateButton.disabled = true;
-            this.simulateButton.textContent = 'Team Already Submitted Today';
-            this.simulateButton.classList.remove('active');
+            this.simulateButton.textContent = 'View Results';
+            this.simulateButton.classList.add('active');
         }
     }
 
@@ -400,10 +399,10 @@ class NBABudgetGame {
             // Display the results
             this.displayResults(results);
 
-            // Disable the submit button after successful submission
-            this.simulateButton.disabled = true;
-            this.simulateButton.textContent = 'Team Submitted';
-            this.simulateButton.classList.remove('active');
+            // Update the submit button after successful submission
+            this.simulateButton.disabled = false;  // Keep it enabled
+            this.simulateButton.textContent = 'View Results';
+            this.simulateButton.classList.add('active');
 
             // Disable player selection
             this.playersGrid.querySelectorAll('.player-card').forEach(card => {
