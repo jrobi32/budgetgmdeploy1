@@ -319,13 +319,24 @@ class NBABudgetGame {
 
     async simulateSeason() {
         try {
+            // Check if nickname is set
+            if (!this.nickname) {
+                alert("Don't forget to enter a nickname first!");
+                return;
+            }
+
             // Check if user has already submitted today
             const lastSubmission = localStorage.getItem('budgetgm_last_submission');
             const today = new Date().toDateString();
             
+            // If this is a review of today's submission, just show the results
             if (lastSubmission === today) {
-                alert('You have already submitted a team today. Come back tomorrow!');
-                return;
+                const submissions = JSON.parse(localStorage.getItem('budgetgm_submissions') || '[]');
+                const todaySubmission = submissions.find(s => s.date === today);
+                if (todaySubmission) {
+                    this.displayResults(todaySubmission.results);
+                    return;
+                }
             }
 
             // Save submission date
