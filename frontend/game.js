@@ -468,7 +468,7 @@ class NBABudgetGame {
                 PPG: ${teamStats.points}<br>
                 RPG: ${teamStats.rebounds}<br>
                 APG: ${teamStats.assists}<br>
-                FG%: ${teamStats.fg_pct}%<br>
+                FG%: ${(parseFloat(teamStats.fg_pct) * 100).toFixed(1)}%<br>
                 TOV: ${teamStats.turnovers}
             `;
 
