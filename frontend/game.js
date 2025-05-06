@@ -524,21 +524,20 @@ class NBABudgetGame {
         const nickname = this.nicknameInput.value.trim();
         if (nickname) {
             try {
-                // Check if nickname is already taken
-                const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/check-nickname', {
+                // Check if nickname is available
+                const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ nickname })
+                    body: JSON.stringify({
+                        nickname: nickname,
+                        players: [],
+                        results: { wins: 0, losses: 0 }
+                    })
                 });
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await response.json();
-                if (data.exists) {
+                if (response.status === 409) {
                     alert('Sorry, that name is already taken.');
                     return;
                 }
@@ -549,7 +548,7 @@ class NBABudgetGame {
                 this.saveNicknameBtn.disabled = true;
             } catch (error) {
                 console.error('Error checking nickname:', error);
-                alert('Error checking nickname. Please try again.');
+                alert('Error checking nickname availability. Please try again.');
             }
         }
     }

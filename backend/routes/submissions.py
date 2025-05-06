@@ -81,17 +81,23 @@ def save_submission(submission_date, nickname, players, results, predicted_wins,
 def submit_team():
     try:
         data = request.get_json()
+        required_fields = ['nickname', 'players', 'results']
         
         # Validate required fields
-        required_fields = ['nickname', 'players', 'results']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields'}), 400
+            
+        # Check if nickname already exists for today
+        today = datetime.now().strftime('%Y-%m-%d')
+        existing_submission = Submission.query.filter_by(
+            nickname=data['nickname'],
+            date=today
+        ).first()
         
-        # Get current date in Eastern time
-        current_date = datetime.now().strftime('%Y-%m-%d')
-        
-        # Calculate team statistics from the 5 selected players
+        if existing_submission:
+            return jsonify({'error': 'Sorry, that name is already taken.'}), 409
+
+        # Calculate team statistics
         team_stats = {
             'points': sum(float(p['Points Per Game (Avg)']) for p in data['players']),
             'rebounds': sum(float(p['Rebounds Per Game (Avg)']) for p in data['players']),
@@ -125,7 +131,7 @@ def submit_team():
         
         # Save the submission
         save_submission(
-            current_date,
+            today,
             data['nickname'],
             data['players'],
             data['results'],
