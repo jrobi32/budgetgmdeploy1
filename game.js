@@ -424,6 +424,9 @@ class NBABudgetGame {
                     if (!submitResponse.ok) {
                         throw new Error(`HTTP error! status: ${submitResponse.status}`);
                     }
+
+                    // Wait a moment for the submission to be processed
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 } catch (error) {
                     console.error('Error submitting team:', error);
                     // Continue without submitting to backend
@@ -448,11 +451,6 @@ class NBABudgetGame {
 
             // Always fetch leaderboard data
             try {
-                // Add a small delay if we just submitted
-                if (!isViewingResults) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-
                 const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
                     method: 'GET',
                     headers: {
