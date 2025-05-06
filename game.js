@@ -342,62 +342,50 @@ class NBABudgetGame {
                 return;
             }
 
-            // Check if user has already submitted today
-            const lastSubmission = localStorage.getItem('budgetgm_last_submission');
-            const today = new Date().toDateString();
-            
-            // If this is a review of today's submission, just show the results
-            if (lastSubmission === today) {
-                const submissions = JSON.parse(localStorage.getItem('budgetgm_submissions') || '[]');
-                const todaySubmission = submissions.find(s => s.date === today);
-                if (todaySubmission) {
-                    this.displayResults(todaySubmission.results);
-                    return;
-                }
+            if (this.selectedPlayers.length !== 5) {
+                alert("Please select exactly 5 players!");
+                return;
             }
 
-            // Save submission date
-            localStorage.setItem('budgetgm_last_submission', today);
-
-            let points = 0;
-            let rebounds = 0;
-            let assists = 0;
-            let steals = 0;
-            let blocks = 0;
-            let fgPercentages = [];
-            let ftPercentages = [];
-            let threePointPercentages = [];
-
-            // Calculate team totals
+            // Calculate team stats
+            let points = 0, rebounds = 0, assists = 0, steals = 0, blocks = 0;
             this.selectedPlayers.forEach(player => {
-                points += parseFloat(player['Points Per Game (Avg)']);
-                rebounds += parseFloat(player['Rebounds Per Game (Avg)']);
-                assists += parseFloat(player['Assists Per Game (Avg)']);
-                steals += parseFloat(player['Steals Per Game (Avg)']);
-                blocks += parseFloat(player['Blocks Per Game (Avg)']);
-                
-                fgPercentages.push(parseFloat(player['Field Goal % (Avg)']));
-                ftPercentages.push(parseFloat(player['Free Throw % (Avg)']));
-                threePointPercentages.push(parseFloat(player['Three Point % (Avg)']));
+                points += parseFloat(player['Points Per Game (Avg)'] || 0);
+                rebounds += parseFloat(player['Rebounds Per Game (Avg)'] || 0);
+                assists += parseFloat(player['Assists Per Game (Avg)'] || 0);
+                steals += parseFloat(player['Steals Per Game (Avg)'] || 0);
+                blocks += parseFloat(player['Blocks Per Game (Avg)'] || 0);
             });
 
-            // Calculate average percentages
-            const fgPercentage = fgPercentages.reduce((a, b) => a + b, 0) / fgPercentages.length;
-            const ftPercentage = ftPercentages.reduce((a, b) => a + b, 0) / ftPercentages.length;
-            const threePointPercentage = threePointPercentages.reduce((a, b) => a + b, 0) / threePointPercentages.length;
+            // Calculate predicted wins
+            let predictedWins = 0 +
+                (points * 0.45) +
+                (rebounds * 0.15) +
+                (assists * 0.18) +
+                (steals * 0.11) +
+                (blocks * 0.09);
 
-            const predictedWins = calculateExpectedWins(this.selectedPlayers);
+            // Scale up the prediction
+            predictedWins = predictedWins * 1.2;
+            
+            // Ensure prediction stays within reasonable bounds
+            predictedWins = Math.round(Math.max(8, Math.min(74, predictedWins)));
 
-            // Format data for display
             const results = {
                 wins: predictedWins,
                 total_ppg: points.toFixed(1),
                 total_rpg: rebounds.toFixed(1),
                 total_apg: assists.toFixed(1),
+                total_spg: steals.toFixed(1),
+                total_bpg: blocks.toFixed(1),
                 outcome: this.getSeasonOutcome(predictedWins)
             };
 
-            // Store the submission in localStorage
+            // Save submission date and results
+            const today = new Date().toDateString();
+            localStorage.setItem('budgetgm_last_submission', today);
+
+            // Store the submission
             const submission = {
                 date: today,
                 nickname: this.nickname,
@@ -417,8 +405,8 @@ class NBABudgetGame {
             // Display the results
             this.displayResults(results);
 
-            // Update the submit button after successful submission
-            this.simulateButton.disabled = false;  // Keep it enabled
+            // Update the submit button
+            this.simulateButton.disabled = false;
             this.simulateButton.textContent = 'View Results';
             this.simulateButton.classList.add('active');
 
@@ -430,13 +418,7 @@ class NBABudgetGame {
 
         } catch (error) {
             console.error('Error in season simulation:', error);
-            this.displayResults({
-                wins: 8,
-                total_ppg: '100.0',
-                total_rpg: '40.0',
-                total_apg: '20.0',
-                outcome: this.getSeasonOutcome(8)
-            });
+            alert('Error simulating season. Please try again.');
         }
     }
 
@@ -463,30 +445,31 @@ class NBABudgetGame {
                     <h2>SEASON RESULTS</h2>
                     <div class="results-content">
                         <div class="predicted-wins">
-                            <h3>Predicted Wins: ${data.predicted_wins.toFixed(1)}</h3>
+                            <h3>Predicted Wins: ${data.wins}</h3>
+                            <p>Season Outlook: ${data.outcome}</p>
                         </div>
                         <div class="team-stats">
                             <h3>Team Statistics</h3>
                             <div class="stats-grid">
                                 <div class="stat-item">
-                                    <span class="stat-label">Points:</span>
-                                    <span class="stat-value">${data.team_stats.points.toFixed(1)}</span>
+                                    <span class="stat-label">Points Per Game:</span>
+                                    <span class="stat-value">${data.total_ppg}</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">Rebounds:</span>
-                                    <span class="stat-value">${data.team_stats.rebounds.toFixed(1)}</span>
+                                    <span class="stat-label">Rebounds Per Game:</span>
+                                    <span class="stat-value">${data.total_rpg}</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">Assists:</span>
-                                    <span class="stat-value">${data.team_stats.assists.toFixed(1)}</span>
+                                    <span class="stat-label">Assists Per Game:</span>
+                                    <span class="stat-value">${data.total_apg}</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">Steals:</span>
-                                    <span class="stat-value">${data.team_stats.steals.toFixed(1)}</span>
+                                    <span class="stat-label">Steals Per Game:</span>
+                                    <span class="stat-value">${data.total_spg}</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">Blocks:</span>
-                                    <span class="stat-value">${data.team_stats.blocks.toFixed(1)}</span>
+                                    <span class="stat-label">Blocks Per Game:</span>
+                                    <span class="stat-value">${data.total_bpg}</span>
                                 </div>
                             </div>
                         </div>
