@@ -594,4 +594,186 @@ function calculateExpectedWins(selectedPlayers) {
 }
 
 // Initialize the game
-const game = new NBABudgetGame(); 
+const game = new NBABudgetGame();
+
+// Add these variables at the top with other state variables
+let currentDate = new Date().toISOString().split('T')[0];
+let availableDates = [];
+let playedDates = [];
+
+// Add this function to load history
+async function loadHistory() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/history?nickname=${encodeURIComponent(currentNickname)}`);
+        if (!response.ok) throw new Error('Failed to load history');
+        const data = await response.json();
+        availableDates = data.dates;
+        playedDates = data.played_dates;
+        updateHistoryView();
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}
+
+// Add this function to load a specific game state
+async function loadGameState(date) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/game-state/${date}`);
+        if (!response.ok) throw new Error('Failed to load game state');
+        const data = await response.json();
+        currentDate = date;
+        playerStats = data.player_stats;
+        updatePlayerList();
+        updateTeamStats();
+    } catch (error) {
+        console.error('Error loading game state:', error);
+    }
+}
+
+// Add this function to update the history view
+function updateHistoryView() {
+    const historyContainer = document.getElementById('history-container');
+    if (!historyContainer) return;
+
+    historyContainer.innerHTML = `
+        <h3>Previous Games</h3>
+        <div class="history-list">
+            ${availableDates.map(date => `
+                <div class="history-item ${playedDates.includes(date) ? 'played' : ''}" onclick="loadGameState('${date}')">
+                    <span>${new Date(date).toLocaleDateString()}</span>
+                    ${playedDates.includes(date) ? '<span class="played-badge">Played</span>' : ''}
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Modify the existing loadPlayerStats function
+async function loadPlayerStats() {
+    try {
+        // If we're loading a historical game state, don't fetch new stats
+        if (currentDate !== new Date().toISOString().split('T')[0]) {
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/player-stats`);
+        if (!response.ok) throw new Error('Failed to load player stats');
+        playerStats = await response.json();
+        updatePlayerList();
+        updateTeamStats();
+    } catch (error) {
+        console.error('Error loading player stats:', error);
+    }
+}
+
+// Modify the existing saveNickname function
+async function saveNickname() {
+    const nickname = document.getElementById('nickname').value.trim();
+    if (!nickname) {
+        alert('Please enter a nickname');
+        return;
+    }
+
+    try {
+        // Check if nickname is available
+        const checkResponse = await fetch(`${API_BASE_URL}/api/submit-team`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                nickname: nickname,
+                players: selectedPlayers,
+                results: {
+                    wins: calculatePredictedWins()
+                }
+            })
+        });
+
+        if (checkResponse.status === 409) {
+            alert('Sorry, that name is already taken.');
+            return;
+        }
+
+        if (!checkResponse.ok) throw new Error('Failed to save nickname');
+        
+        currentNickname = nickname;
+        document.getElementById('nickname-container').style.display = 'none';
+        document.getElementById('game-container').style.display = 'block';
+        
+        // Load history after saving nickname
+        await loadHistory();
+    } catch (error) {
+        console.error('Error saving nickname:', error);
+        alert('Error saving nickname. Please try again.');
+    }
+}
+
+// Add this to your HTML
+document.body.insertAdjacentHTML('beforeend', `
+    <div id="history-container" class="history-container">
+        <h3>Previous Games</h3>
+        <div class="history-list"></div>
+    </div>
+`);
+
+// Add this CSS
+const style = document.createElement('style');
+style.textContent = `
+    .history-container {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 15px;
+        border-radius: 8px;
+        max-width: 300px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .history-container h3 {
+        color: white;
+        margin: 0 0 10px 0;
+        font-size: 1.2em;
+    }
+
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .history-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.2s;
+    }
+
+    .history-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .history-item.played {
+        border-left: 3px solid #4CAF50;
+    }
+
+    .played-badge {
+        background: #4CAF50;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.8em;
+    }
+`;
+document.head.appendChild(style);
+
+// Call loadHistory when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    loadHistory();
+}); 
