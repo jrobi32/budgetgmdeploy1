@@ -419,11 +419,11 @@ class NBABudgetGame {
                 }
 
                 const leaderboardData = await response.json();
-                const todaySubmissions = leaderboardData.submissions || [];
+                console.log('Leaderboard data:', leaderboardData); // Debug log
                 
                 // Find user's rank
-                const userRank = todaySubmissions.findIndex(sub => sub.nickname === this.nickname) + 1;
-                const totalUsers = todaySubmissions.length;
+                const userRank = leaderboardData.submissions.findIndex(sub => sub.nickname === this.nickname) + 1;
+                const totalUsers = leaderboardData.submissions.length;
                 
                 // Calculate percentile
                 const percentile = totalUsers > 1 ? 
@@ -435,6 +435,8 @@ class NBABudgetGame {
                     total: totalUsers,
                     percentile: percentile
                 };
+                
+                console.log('Ranking info:', results.ranking); // Debug log
             } catch (error) {
                 console.error('Error fetching leaderboard:', error);
                 // Continue without ranking info
@@ -478,6 +480,8 @@ class NBABudgetGame {
         }
 
         try {
+            console.log('Displaying results with data:', data); // Debug log
+
             // Create ranking message if available
             let rankingMessage = '';
             if (data.ranking) {
