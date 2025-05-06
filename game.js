@@ -23,6 +23,15 @@ class NBABudgetGame {
             this.saveNicknameBtn.disabled = true;
         }
 
+        // Load selected team from localStorage
+        const savedTeam = localStorage.getItem('budgetgm_selected_team');
+        if (savedTeam) {
+            this.selectedPlayers = JSON.parse(savedTeam);
+            // Calculate remaining budget
+            this.remainingBudget = this.budget - this.selectedPlayers.reduce((sum, player) => 
+                sum + parseInt(player['Dollar Value']), 0);
+        }
+
         // Check if user has already submitted today
         this.checkDailySubmission();
         
@@ -230,6 +239,8 @@ class NBABudgetGame {
         if (index !== -1) {
             this.remainingBudget += parseInt(player['Dollar Value']);
             this.selectedPlayers.splice(index, 1);
+            // Update localStorage after removing player
+            localStorage.setItem('budgetgm_selected_team', JSON.stringify(this.selectedPlayers));
             this.updateDisplay();
         }
     }
@@ -313,6 +324,8 @@ class NBABudgetGame {
 
         this.selectedPlayers.push(player);
         this.remainingBudget -= cost;
+        // Save selected team to localStorage
+        localStorage.setItem('budgetgm_selected_team', JSON.stringify(this.selectedPlayers));
         this.updateDisplay();
     }
 
