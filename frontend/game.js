@@ -468,7 +468,7 @@ class NBABudgetGame {
                 PPG: ${teamStats.points}<br>
                 RPG: ${teamStats.rebounds}<br>
                 APG: ${teamStats.assists}<br>
-                FG%: ${(parseFloat(teamStats.fg_pct) * 100).toFixed(1)}%<br>
+                FG%: ${(parseFloat(teamStats.fg_pct) * 100).toFixed(3)}%<br>
                 TOV: ${teamStats.turnovers}
             `;
 
@@ -548,15 +548,15 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.22) +  // Points coefficient
-            (teamStats.rebounds * 0.08) +  // Rebounds coefficient
-            (teamStats.assists * 0.04) +  // Assists coefficient
-            (teamStats.steals * 0.06) +  // Steals coefficient
-            (teamStats.blocks * 0.04) +  // Blocks coefficient
-            (teamStats.fg_pct * 0.1) +  // FG% coefficient
-            (teamStats.ft_pct * 0.04) +  // FT% coefficient
-            (teamStats.three_pct * 0.06) -  // 3P% coefficient
-            (teamStats.turnovers * 0.075);   // Negative impact of turnovers
+            (teamStats.points * 0.55) +  // Points coefficient (0.22 * 2.5)
+            (teamStats.rebounds * 0.20) +  // Rebounds coefficient (0.08 * 2.5)
+            (teamStats.assists * 0.10) +  // Assists coefficient (0.04 * 2.5)
+            (teamStats.steals * 0.15) +  // Steals coefficient (0.06 * 2.5)
+            (teamStats.blocks * 0.10) +  // Blocks coefficient (0.04 * 2.5)
+            (teamStats.fg_pct * 0.25) +  // FG% coefficient (0.1 * 2.5)
+            (teamStats.ft_pct * 0.10) +  // FT% coefficient (0.04 * 2.5)
+            (teamStats.three_pct * 0.15) -  // 3P% coefficient (0.06 * 2.5)
+            (teamStats.turnovers * 0.1875);   // Negative impact of turnovers (0.075 * 2.5)
 
         // Scale up the prediction since bench players will contribute some wins
         predictedWins = predictedWins * 1.1;  // Reduced scaling factor
