@@ -402,7 +402,8 @@ class NBABudgetGame {
             submissions.push(submission);
             localStorage.setItem('budgetgm_submissions', JSON.stringify(submissions));
 
-            // Submit to backend
+            // Submit to backend and wait for response
+            let submitSuccess = false;
             try {
                 const submitResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
                     method: 'POST',
@@ -418,49 +419,57 @@ class NBABudgetGame {
                 if (!submitResponse.ok) {
                     throw new Error(`HTTP error! status: ${submitResponse.status}`);
                 }
+                submitSuccess = true;
             } catch (error) {
                 console.error('Error submitting team:', error);
                 // Continue without submitting to backend
             }
 
-            // Fetch leaderboard data
-            try {
-                const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    mode: 'cors',
-                    credentials: 'same-origin'
-                });
+            // Only fetch leaderboard if submission was successful
+            if (submitSuccess) {
+                try {
+                    // Add a small delay to ensure the submission is processed
+                    await new Promise(resolve => setTimeout(resolve, 1000));
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        mode: 'cors',
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const leaderboardData = await response.json();
+                    console.log('Leaderboard data:', leaderboardData); // Debug log
+                    
+                    if (leaderboardData.submissions && Array.isArray(leaderboardData.submissions)) {
+                        // Find user's rank
+                        const userRank = leaderboardData.submissions.findIndex(sub => sub.nickname === this.nickname) + 1;
+                        const totalUsers = leaderboardData.submissions.length;
+                        
+                        // Calculate percentile
+                        const percentile = totalUsers > 1 ? 
+                            Math.round(((totalUsers - userRank + 1) / totalUsers) * 100) : 100;
+
+                        // Add ranking info to results
+                        results.ranking = {
+                            rank: userRank,
+                            total: totalUsers,
+                            percentile: percentile
+                        };
+                        
+                        console.log('Ranking info:', results.ranking); // Debug log
+                    }
+                } catch (error) {
+                    console.error('Error fetching leaderboard:', error);
+                    // Continue without ranking info
                 }
-
-                const leaderboardData = await response.json();
-                console.log('Leaderboard data:', leaderboardData); // Debug log
-                
-                // Find user's rank
-                const userRank = leaderboardData.submissions.findIndex(sub => sub.nickname === this.nickname) + 1;
-                const totalUsers = leaderboardData.submissions.length;
-                
-                // Calculate percentile
-                const percentile = totalUsers > 1 ? 
-                    Math.round(((totalUsers - userRank + 1) / totalUsers) * 100) : 100;
-
-                // Add ranking info to results
-                results.ranking = {
-                    rank: userRank,
-                    total: totalUsers,
-                    percentile: percentile
-                };
-                
-                console.log('Ranking info:', results.ranking); // Debug log
-            } catch (error) {
-                console.error('Error fetching leaderboard:', error);
-                // Continue without ranking info
             }
 
             // Display the results
