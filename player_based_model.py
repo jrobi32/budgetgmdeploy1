@@ -51,12 +51,14 @@ for i in range(n_teams):
     # Higher weights for important stats
     expected_wins = (
         team_features['Rating'] * 0.4 +  # Rating has highest weight
-        team_features['Points Per Game (Avg)'] * 0.3 +  # Points important
-        team_features['Field Goal % (Avg)'] * 100 * 0.2 +  # Efficiency matters
-        team_features['Rebounds Per Game (Avg)'] * 0.1 +  # Other stats have smaller impact
-        team_features['Assists Per Game (Avg)'] * 0.1 +
-        team_features['Steals Per Game (Avg)'] * 0.1 +
-        team_features['Blocks Per Game (Avg)'] * 0.1
+        team_features['Points Per Game (Avg)'] * 3.1 +  # Points important
+        team_features['Field Goal % (Avg)'] * 0.5392 +  # Efficiency matters
+        team_features['Rebounds Per Game (Avg)'] * 0.05 +  # Other stats have smaller impact
+        team_features['Assists Per Game (Avg)'] * 0.04 +
+        team_features['Steals Per Game (Avg)'] * 0.016 +
+        team_features['Blocks Per Game (Avg)'] * 0.023 +
+        team_features['Free Throw % (Avg)'] * 0.01 +
+        team_features['Three Point % (Avg)'] * 0.015
     )
     
     # Normalize to realistic win range (0-82)
