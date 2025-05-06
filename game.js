@@ -335,248 +335,160 @@ class NBABudgetGame {
     }
 
     async simulateSeason() {
+        if (!this.nickname) {
+            alert('Please enter a nickname first!');
+            return;
+        }
+
+        if (this.selectedPlayers.length !== 5) {
+            alert('Please select exactly 5 players!');
+            return;
+        }
+
+        // Check if user has already submitted today
+        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+        const today = new Date().toDateString();
+        if (lastSubmission === today) {
+            // If already submitted, show results
+            this.showResults();
+            return;
+        }
+
         try {
-            // Check if nickname is set
-            if (!this.nickname) {
-                alert("Don't forget to enter a nickname first!");
-                return;
+            // First get the prediction
+            const predictResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    players: this.selectedPlayers
+                })
+            });
+
+            if (!predictResponse.ok) {
+                throw new Error(`HTTP error! status: ${predictResponse.status}`);
             }
 
-            if (this.selectedPlayers.length !== 5) {
-                alert("Please select exactly 5 players!");
-                return;
-            }
+            const predictData = await predictResponse.json();
+            const predictedWins = predictData.predicted_wins;
 
-            // Check if this is a view results request
-            const lastSubmission = localStorage.getItem('budgetgm_last_submission');
-            const today = new Date().toDateString();
-            const isViewingResults = lastSubmission === today;
-
-            let results;
-            if (!isViewingResults) {
-                // Calculate team stats
-                let points = 0, rebounds = 0, assists = 0, steals = 0, blocks = 0;
-                this.selectedPlayers.forEach(player => {
-                    points += parseFloat(player['Points Per Game (Avg)'] || 0);
-                    rebounds += parseFloat(player['Rebounds Per Game (Avg)'] || 0);
-                    assists += parseFloat(player['Assists Per Game (Avg)'] || 0);
-                    steals += parseFloat(player['Steals Per Game (Avg)'] || 0);
-                    blocks += parseFloat(player['Blocks Per Game (Avg)'] || 0);
-                });
-
-                // Calculate predicted wins
-                let predictedWins = 0 +
-                    (points * 0.45) +
-                    (rebounds * 0.15) +
-                    (assists * 0.18) +
-                    (steals * 0.11) +
-                    (blocks * 0.09);
-
-                // Scale up the prediction
-                predictedWins = predictedWins * 1.2;
-                
-                // Ensure prediction stays within reasonable bounds
-                predictedWins = Math.round(Math.max(8, Math.min(74, predictedWins)));
-
-                results = {
-                    wins: predictedWins,
-                    total_ppg: points.toFixed(1),
-                    total_rpg: rebounds.toFixed(1),
-                    total_apg: assists.toFixed(1),
-                    total_spg: steals.toFixed(1),
-                    total_bpg: blocks.toFixed(1),
-                    outcome: this.getSeasonOutcome(predictedWins)
-                };
-
-                // Save submission date and results
-                localStorage.setItem('budgetgm_last_submission', today);
-
-                // Store the submission
-                const submission = {
-                    date: today,
+            // Then submit the team
+            const submitResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
                     nickname: this.nickname,
-                    players: this.selectedPlayers.map(p => ({
-                        id: p['Player ID'],
-                        name: p['Full Name'],
-                        value: p['Dollar Value']
-                    })),
-                    results: results
-                };
-
-                // Get existing submissions or initialize empty array
-                const submissions = JSON.parse(localStorage.getItem('budgetgm_submissions') || '[]');
-                submissions.push(submission);
-                localStorage.setItem('budgetgm_submissions', JSON.stringify(submissions));
-
-                // Submit to backend
-                try {
-                    const submitResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(submission),
-                        mode: 'cors',
-                        credentials: 'same-origin'
-                    });
-
-                    if (!submitResponse.ok) {
-                        throw new Error(`HTTP error! status: ${submitResponse.status}`);
+                    players: this.selectedPlayers,
+                    results: {
+                        wins: predictedWins,
+                        losses: 82 - predictedWins
                     }
+                })
+            });
 
-                    // Wait a moment for the submission to be processed
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                } catch (error) {
-                    console.error('Error submitting team:', error);
-                    // Continue without submitting to backend
-                }
-
-                // Update the submit button
-                this.simulateButton.disabled = false;
-                this.simulateButton.textContent = 'View Results';
-                this.simulateButton.classList.add('active');
-
-                // Disable player selection
-                this.playersGrid.querySelectorAll('.player-card').forEach(card => {
-                    card.style.pointerEvents = 'none';
-                    card.style.opacity = '0.7';
-                });
-            } else {
-                // Get the stored results
-                const submissions = JSON.parse(localStorage.getItem('budgetgm_submissions') || '[]');
-                const lastSubmission = submissions[submissions.length - 1];
-                results = lastSubmission.results;
+            if (!submitResponse.ok) {
+                throw new Error(`HTTP error! status: ${submitResponse.status}`);
             }
 
-            // Always fetch leaderboard data
-            try {
-                const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    mode: 'cors',
-                    credentials: 'same-origin'
-                });
+            // Save submission date to localStorage
+            localStorage.setItem('budgetgm_last_submission', today);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+            // Update button text
+            this.simulateButton.textContent = 'View Results';
+            this.simulateButton.classList.add('active');
 
-                const leaderboardData = await response.json();
-                console.log('Leaderboard data:', leaderboardData); // Debug log
-                
-                if (leaderboardData.submissions && Array.isArray(leaderboardData.submissions)) {
-                    // Find user's rank
-                    const userRank = leaderboardData.submissions.findIndex(sub => sub.nickname === this.nickname) + 1;
-                    const totalUsers = leaderboardData.submissions.length;
-                    
-                    // Calculate percentile
-                    const percentile = totalUsers > 1 ? 
-                        Math.round(((totalUsers - userRank + 1) / totalUsers) * 100) : 100;
-
-                    // Add ranking info to results
-                    results.ranking = {
-                        rank: userRank,
-                        total: totalUsers,
-                        percentile: percentile
-                    };
-                    
-                    console.log('Ranking info:', results.ranking); // Debug log
-                }
-            } catch (error) {
-                console.error('Error fetching leaderboard:', error);
-                // Continue without ranking info
-            }
-
-            // Display the results
-            this.displayResults(results);
+            // Show results
+            this.showResults();
 
         } catch (error) {
-            console.error('Error in season simulation:', error);
-            alert('Error simulating season. Please try again.');
+            console.error('Error:', error);
+            alert('Error submitting team. Please try again later.');
+        }
+    }
+
+    async showResults() {
+        try {
+            const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            this.displayResults(data);
+        } catch (error) {
+            console.error('Error fetching leaderboard:', error);
+            alert('Error fetching results. Please try again later.');
         }
     }
 
     displayResults(data) {
-        // Create results div if it doesn't exist
-        let resultsDiv = document.getElementById('results');
-        if (!resultsDiv) {
-            resultsDiv = document.createElement('div');
-            resultsDiv.id = 'results';
-            document.body.appendChild(resultsDiv);
-        }
+        const resultsSection = document.querySelector('.results-section');
+        resultsSection.innerHTML = '';
 
-        // Create overlay if it doesn't exist
-        let overlay = document.getElementById('results-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'results-overlay';
-            document.body.appendChild(overlay);
-        }
+        const resultsContainer = document.createElement('div');
+        resultsContainer.className = 'results-container';
 
-        try {
-            console.log('Displaying results with data:', data); // Debug log
+        // Add date
+        const dateHeader = document.createElement('h2');
+        dateHeader.textContent = `Results for ${data.date}`;
+        resultsContainer.appendChild(dateHeader);
 
-            // Create ranking message if available
-            let rankingMessage = '';
-            if (data.ranking) {
-                const { rank, total, percentile } = data.ranking;
-                rankingMessage = `
-                    <div class="ranking-info">
-                        <h3>Your Ranking</h3>
-                        <p>Great job! Your team was in the ${percentile}th percentile, ranking #${rank} out of ${total} users!</p>
-                    </div>
-                `;
+        // Create leaderboard
+        const leaderboard = document.createElement('div');
+        leaderboard.className = 'leaderboard';
+
+        // Add headers
+        const headerRow = document.createElement('div');
+        headerRow.className = 'leaderboard-row header';
+        headerRow.innerHTML = `
+            <div class="rank">Rank</div>
+            <div class="nickname">Nickname</div>
+            <div class="wins">Predicted Wins</div>
+            <div class="team">Team</div>
+        `;
+        leaderboard.appendChild(headerRow);
+
+        // Add submissions
+        data.submissions.forEach((submission, index) => {
+            const row = document.createElement('div');
+            row.className = 'leaderboard-row';
+            if (submission.nickname === this.nickname) {
+                row.classList.add('current-user');
             }
 
-            resultsDiv.innerHTML = `
-                <div class="results-container">
-                    <h2>SEASON RESULTS</h2>
-                    <div class="results-content">
-                        <div class="predicted-wins">
-                            <h3>Predicted Wins: ${data.wins}</h3>
-                            <p>Season Outlook: ${data.outcome}</p>
-                        </div>
-                        ${rankingMessage}
-                        <div class="team-stats">
-                            <h3>Team Statistics</h3>
-                            <div class="stats-grid">
-                                <div class="stat-item">
-                                    <span class="stat-label">Points Per Game:</span>
-                                    <span class="stat-value">${data.total_ppg}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Rebounds Per Game:</span>
-                                    <span class="stat-value">${data.total_rpg}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Assists Per Game:</span>
-                                    <span class="stat-value">${data.total_apg}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Steals Per Game:</span>
-                                    <span class="stat-value">${data.total_spg}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Blocks Per Game:</span>
-                                    <span class="stat-value">${data.total_bpg}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button onclick="game.closeResults()" class="close-button">Close</button>
-                </div>
+            const teamList = submission.players.map(player => 
+                `${player['Full Name']} ($${player['Dollar Value']})`
+            ).join(', ');
+
+            row.innerHTML = `
+                <div class="rank">${index + 1}</div>
+                <div class="nickname">${submission.nickname}</div>
+                <div class="wins">${submission.predicted_wins}</div>
+                <div class="team">${teamList}</div>
             `;
-            
-            resultsDiv.classList.add('active');
-            overlay.classList.add('active');
-        } catch (error) {
-            console.error('Error displaying results:', error);
-            alert('Error displaying results. Please try again.');
-        }
+            leaderboard.appendChild(row);
+        });
+
+        resultsContainer.appendChild(leaderboard);
+
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-results';
+        closeButton.textContent = 'Close';
+        closeButton.onclick = () => this.closeResults();
+        resultsContainer.appendChild(closeButton);
+
+        resultsSection.appendChild(resultsContainer);
+        resultsSection.style.display = 'block';
     }
 
     closeResults() {
