@@ -66,6 +66,13 @@ class NBABudgetGame {
         
         this.loadPlayers();
         this.setupEventListeners();
+
+        // Add history button below simulate button
+        const historyButton = document.createElement('button');
+        historyButton.className = 'history-button';
+        historyButton.textContent = 'Previous Games';
+        historyButton.onclick = () => this.toggleHistoryView();
+        this.simulateButton.parentNode.insertBefore(historyButton, this.simulateButton.nextSibling);
     }
 
     checkDailySubmission() {
@@ -226,13 +233,6 @@ class NBABudgetGame {
         } else {
             this.simulateButton.classList.remove('active');
         }
-        
-        // Add Previous Games button to team display
-        const historyButton = document.createElement('button');
-        historyButton.className = 'history-button';
-        historyButton.textContent = 'Previous Games';
-        historyButton.onclick = () => this.toggleHistoryView();
-        this.teamDisplay.appendChild(historyButton);
         
         // Update the display without re-randomizing
         this.displayPlayers();
@@ -504,14 +504,7 @@ class NBABudgetGame {
             resultsSection.style.display = 'none';
         };
 
-        // Add history button
-        const historyButton = document.createElement('button');
-        historyButton.className = 'history-button';
-        historyButton.textContent = 'Previous Games';
-        historyButton.onclick = () => this.toggleHistoryView();
-
         buttonsContainer.appendChild(closeButton);
-        buttonsContainer.appendChild(historyButton);
         resultsContainer.appendChild(buttonsContainer);
 
         resultsSection.appendChild(resultsContainer);
@@ -601,15 +594,15 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.55) +  // Points coefficient (0.22 * 2.5)
-            (teamStats.rebounds * 0.20) +  // Rebounds coefficient (0.08 * 2.5)
-            (teamStats.assists * 0.10) +  // Assists coefficient (0.04 * 2.5)
-            (teamStats.steals * 0.15) +  // Steals coefficient (0.06 * 2.5)
-            (teamStats.blocks * 0.10) +  // Blocks coefficient (0.04 * 2.5)
-            (teamStats.fg_pct * 0.25) +  // FG% coefficient (0.1 * 2.5)
-            (teamStats.ft_pct * 0.10) +  // FT% coefficient (0.04 * 2.5)
-            (teamStats.three_pct * 0.15) -  // 3P% coefficient (0.06 * 2.5)
-            (teamStats.turnovers * 0.1875);   // Negative impact of turnovers (0.075 * 2.5)
+            (teamStats.points * 0.73) +  // Points coefficient (0.22 * 2.5)
+            (teamStats.rebounds * 0.18) +  // Rebounds coefficient (0.08 * 2.5)
+            (teamStats.assists * 0.09) +  // Assists coefficient (0.04 * 2.5)
+            (teamStats.steals * 0.13) +  // Steals coefficient (0.06 * 2.5)
+            (teamStats.blocks * 0.09) +  // Blocks coefficient (0.04 * 2.5)
+            (teamStats.fg_pct * 0.24) +  // FG% coefficient (0.1 * 2.5)
+            (teamStats.ft_pct * 0.08) +  // FT% coefficient (0.04 * 2.5)
+            (teamStats.three_pct * 0.13) -  // 3P% coefficient (0.06 * 2.5)
+            (teamStats.turnovers * 0.19);   // Negative impact of turnovers (0.075 * 2.5)
 
         // Scale up the prediction since bench players will contribute some wins
         predictedWins = predictedWins * 1.1;  // Reduced scaling factor
@@ -651,12 +644,35 @@ async function loadGameState(date) {
         const response = await fetch(`${API_BASE_URL}/api/game-state/${date}`);
         if (!response.ok) throw new Error('Failed to load game state');
         const data = await response.json();
+        
+        // Store the current date and player stats
         currentDate = date;
         playerStats = data.player_stats;
-        updatePlayerList();
-        updateTeamStats();
+        
+        // Clear selected players when loading a historical game
+        game.selectedPlayers = [];
+        game.remainingBudget = game.budget;
+        
+        // Update the display
+        game.updateDisplay();
+        
+        // Check if user has already submitted for this date
+        const submissionsResponse = await fetch(`${API_BASE_URL}/api/history?nickname=${encodeURIComponent(game.nickname)}`);
+        if (submissionsResponse.ok) {
+            const historyData = await submissionsResponse.json();
+            if (historyData.played_dates.includes(date)) {
+                // If user has already submitted, show results
+                game.showResults();
+                // Disable player selection
+                document.querySelectorAll('.player-card').forEach(card => {
+                    card.style.pointerEvents = 'none';
+                    card.style.opacity = '0.7';
+                });
+            }
+        }
     } catch (error) {
         console.error('Error loading game state:', error);
+        alert('Error loading historical game state. Please try again.');
     }
 }
 
