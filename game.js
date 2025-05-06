@@ -347,144 +347,154 @@ class NBABudgetGame {
                 return;
             }
 
-            // Calculate team stats
-            let points = 0, rebounds = 0, assists = 0, steals = 0, blocks = 0;
-            this.selectedPlayers.forEach(player => {
-                points += parseFloat(player['Points Per Game (Avg)'] || 0);
-                rebounds += parseFloat(player['Rebounds Per Game (Avg)'] || 0);
-                assists += parseFloat(player['Assists Per Game (Avg)'] || 0);
-                steals += parseFloat(player['Steals Per Game (Avg)'] || 0);
-                blocks += parseFloat(player['Blocks Per Game (Avg)'] || 0);
-            });
-
-            // Calculate predicted wins
-            let predictedWins = 0 +
-                (points * 0.45) +
-                (rebounds * 0.15) +
-                (assists * 0.18) +
-                (steals * 0.11) +
-                (blocks * 0.09);
-
-            // Scale up the prediction
-            predictedWins = predictedWins * 1.2;
-            
-            // Ensure prediction stays within reasonable bounds
-            predictedWins = Math.round(Math.max(8, Math.min(74, predictedWins)));
-
-            const results = {
-                wins: predictedWins,
-                total_ppg: points.toFixed(1),
-                total_rpg: rebounds.toFixed(1),
-                total_apg: assists.toFixed(1),
-                total_spg: steals.toFixed(1),
-                total_bpg: blocks.toFixed(1),
-                outcome: this.getSeasonOutcome(predictedWins)
-            };
-
-            // Save submission date and results
+            // Check if this is a view results request
+            const lastSubmission = localStorage.getItem('budgetgm_last_submission');
             const today = new Date().toDateString();
-            localStorage.setItem('budgetgm_last_submission', today);
+            const isViewingResults = lastSubmission === today;
 
-            // Store the submission
-            const submission = {
-                date: today,
-                nickname: this.nickname,
-                players: this.selectedPlayers.map(p => ({
-                    id: p['Player ID'],
-                    name: p['Full Name'],
-                    value: p['Dollar Value']
-                })),
-                results: results
-            };
-
-            // Get existing submissions or initialize empty array
-            const submissions = JSON.parse(localStorage.getItem('budgetgm_submissions') || '[]');
-            submissions.push(submission);
-            localStorage.setItem('budgetgm_submissions', JSON.stringify(submissions));
-
-            // Submit to backend and wait for response
-            let submitSuccess = false;
-            try {
-                const submitResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(submission),
-                    mode: 'cors',
-                    credentials: 'same-origin'
+            let results;
+            if (!isViewingResults) {
+                // Calculate team stats
+                let points = 0, rebounds = 0, assists = 0, steals = 0, blocks = 0;
+                this.selectedPlayers.forEach(player => {
+                    points += parseFloat(player['Points Per Game (Avg)'] || 0);
+                    rebounds += parseFloat(player['Rebounds Per Game (Avg)'] || 0);
+                    assists += parseFloat(player['Assists Per Game (Avg)'] || 0);
+                    steals += parseFloat(player['Steals Per Game (Avg)'] || 0);
+                    blocks += parseFloat(player['Blocks Per Game (Avg)'] || 0);
                 });
 
-                if (!submitResponse.ok) {
-                    throw new Error(`HTTP error! status: ${submitResponse.status}`);
-                }
-                submitSuccess = true;
-            } catch (error) {
-                console.error('Error submitting team:', error);
-                // Continue without submitting to backend
-            }
+                // Calculate predicted wins
+                let predictedWins = 0 +
+                    (points * 0.45) +
+                    (rebounds * 0.15) +
+                    (assists * 0.18) +
+                    (steals * 0.11) +
+                    (blocks * 0.09);
 
-            // Only fetch leaderboard if submission was successful
-            if (submitSuccess) {
+                // Scale up the prediction
+                predictedWins = predictedWins * 1.2;
+                
+                // Ensure prediction stays within reasonable bounds
+                predictedWins = Math.round(Math.max(8, Math.min(74, predictedWins)));
+
+                results = {
+                    wins: predictedWins,
+                    total_ppg: points.toFixed(1),
+                    total_rpg: rebounds.toFixed(1),
+                    total_apg: assists.toFixed(1),
+                    total_spg: steals.toFixed(1),
+                    total_bpg: blocks.toFixed(1),
+                    outcome: this.getSeasonOutcome(predictedWins)
+                };
+
+                // Save submission date and results
+                localStorage.setItem('budgetgm_last_submission', today);
+
+                // Store the submission
+                const submission = {
+                    date: today,
+                    nickname: this.nickname,
+                    players: this.selectedPlayers.map(p => ({
+                        id: p['Player ID'],
+                        name: p['Full Name'],
+                        value: p['Dollar Value']
+                    })),
+                    results: results
+                };
+
+                // Get existing submissions or initialize empty array
+                const submissions = JSON.parse(localStorage.getItem('budgetgm_submissions') || '[]');
+                submissions.push(submission);
+                localStorage.setItem('budgetgm_submissions', JSON.stringify(submissions));
+
+                // Submit to backend
                 try {
-                    // Add a small delay to ensure the submission is processed
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-
-                    const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
-                        method: 'GET',
+                    const submitResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
+                        method: 'POST',
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
+                        body: JSON.stringify(submission),
                         mode: 'cors',
                         credentials: 'same-origin'
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const leaderboardData = await response.json();
-                    console.log('Leaderboard data:', leaderboardData); // Debug log
-                    
-                    if (leaderboardData.submissions && Array.isArray(leaderboardData.submissions)) {
-                        // Find user's rank
-                        const userRank = leaderboardData.submissions.findIndex(sub => sub.nickname === this.nickname) + 1;
-                        const totalUsers = leaderboardData.submissions.length;
-                        
-                        // Calculate percentile
-                        const percentile = totalUsers > 1 ? 
-                            Math.round(((totalUsers - userRank + 1) / totalUsers) * 100) : 100;
-
-                        // Add ranking info to results
-                        results.ranking = {
-                            rank: userRank,
-                            total: totalUsers,
-                            percentile: percentile
-                        };
-                        
-                        console.log('Ranking info:', results.ranking); // Debug log
+                    if (!submitResponse.ok) {
+                        throw new Error(`HTTP error! status: ${submitResponse.status}`);
                     }
                 } catch (error) {
-                    console.error('Error fetching leaderboard:', error);
-                    // Continue without ranking info
+                    console.error('Error submitting team:', error);
+                    // Continue without submitting to backend
                 }
+
+                // Update the submit button
+                this.simulateButton.disabled = false;
+                this.simulateButton.textContent = 'View Results';
+                this.simulateButton.classList.add('active');
+
+                // Disable player selection
+                this.playersGrid.querySelectorAll('.player-card').forEach(card => {
+                    card.style.pointerEvents = 'none';
+                    card.style.opacity = '0.7';
+                });
+            } else {
+                // Get the stored results
+                const submissions = JSON.parse(localStorage.getItem('budgetgm_submissions') || '[]');
+                const lastSubmission = submissions[submissions.length - 1];
+                results = lastSubmission.results;
+            }
+
+            // Always fetch leaderboard data
+            try {
+                // Add a small delay if we just submitted
+                if (!isViewingResults) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const leaderboardData = await response.json();
+                console.log('Leaderboard data:', leaderboardData); // Debug log
+                
+                if (leaderboardData.submissions && Array.isArray(leaderboardData.submissions)) {
+                    // Find user's rank
+                    const userRank = leaderboardData.submissions.findIndex(sub => sub.nickname === this.nickname) + 1;
+                    const totalUsers = leaderboardData.submissions.length;
+                    
+                    // Calculate percentile
+                    const percentile = totalUsers > 1 ? 
+                        Math.round(((totalUsers - userRank + 1) / totalUsers) * 100) : 100;
+
+                    // Add ranking info to results
+                    results.ranking = {
+                        rank: userRank,
+                        total: totalUsers,
+                        percentile: percentile
+                    };
+                    
+                    console.log('Ranking info:', results.ranking); // Debug log
+                }
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+                // Continue without ranking info
             }
 
             // Display the results
             this.displayResults(results);
-
-            // Update the submit button
-            this.simulateButton.disabled = false;
-            this.simulateButton.textContent = 'View Results';
-            this.simulateButton.classList.add('active');
-
-            // Disable player selection
-            this.playersGrid.querySelectorAll('.player-card').forEach(card => {
-                card.style.pointerEvents = 'none';
-                card.style.opacity = '0.7';
-            });
 
         } catch (error) {
             console.error('Error in season simulation:', error);
