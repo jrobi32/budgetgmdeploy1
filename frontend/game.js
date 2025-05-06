@@ -439,7 +439,7 @@ class NBABudgetGame {
             <div class="nickname">Nickname</div>
             <div class="wins">Predicted Wins</div>
             <div class="team">Team</div>
-            <div class="stats">Team Stats</div>
+            <div class="stats" style="color: white;">Team Stats</div>
         `;
         leaderboard.appendChild(headerRow);
 
@@ -520,13 +520,37 @@ class NBABudgetGame {
         this.simulateButton.addEventListener('click', () => this.simulateSeason());
     }
 
-    saveNickname() {
+    async saveNickname() {
         const nickname = this.nicknameInput.value.trim();
         if (nickname) {
-            this.nickname = nickname;
-            localStorage.setItem('budgetgm_nickname', nickname);
-            this.nicknameInput.disabled = true;
-            this.saveNicknameBtn.disabled = true;
+            try {
+                // Check if nickname is already taken
+                const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/check-nickname', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ nickname })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (data.exists) {
+                    alert('Sorry, that name is already taken.');
+                    return;
+                }
+
+                this.nickname = nickname;
+                localStorage.setItem('budgetgm_nickname', nickname);
+                this.nicknameInput.disabled = true;
+                this.saveNicknameBtn.disabled = true;
+            } catch (error) {
+                console.error('Error checking nickname:', error);
+                alert('Error checking nickname. Please try again.');
+            }
         }
     }
 }
