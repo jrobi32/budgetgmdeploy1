@@ -548,15 +548,15 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.15) +  // Points coefficient
-            (teamStats.rebounds * 0.05) +  // Rebounds coefficient
-            (teamStats.assists * 0.06) +  // Assists coefficient
-            (teamStats.steals * 0.04) +  // Steals coefficient
-            (teamStats.blocks * 0.03) +  // Blocks coefficient
-            (teamStats.fg_pct * 0.08) +  // FG% coefficient
+            (teamStats.points * 0.22) +  // Points coefficient
+            (teamStats.rebounds * 0.08) +  // Rebounds coefficient
+            (teamStats.assists * 0.04) +  // Assists coefficient
+            (teamStats.steals * 0.06) +  // Steals coefficient
+            (teamStats.blocks * 0.04) +  // Blocks coefficient
+            (teamStats.fg_pct * 0.1) +  // FG% coefficient
             (teamStats.ft_pct * 0.04) +  // FT% coefficient
-            (teamStats.three_pct * 0.04) -  // 3P% coefficient
-            (teamStats.turnovers * 0.1);   // Negative impact of turnovers
+            (teamStats.three_pct * 0.06) -  // 3P% coefficient
+            (teamStats.turnovers * 0.075);   // Negative impact of turnovers
 
         // Scale up the prediction since bench players will contribute some wins
         predictedWins = predictedWins * 1.1;  // Reduced scaling factor
