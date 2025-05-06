@@ -402,6 +402,27 @@ class NBABudgetGame {
             submissions.push(submission);
             localStorage.setItem('budgetgm_submissions', JSON.stringify(submissions));
 
+            // Submit to backend
+            try {
+                const submitResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(submission),
+                    mode: 'cors',
+                    credentials: 'same-origin'
+                });
+
+                if (!submitResponse.ok) {
+                    throw new Error(`HTTP error! status: ${submitResponse.status}`);
+                }
+            } catch (error) {
+                console.error('Error submitting team:', error);
+                // Continue without submitting to backend
+            }
+
             // Fetch leaderboard data
             try {
                 const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
