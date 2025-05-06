@@ -402,6 +402,44 @@ class NBABudgetGame {
             submissions.push(submission);
             localStorage.setItem('budgetgm_submissions', JSON.stringify(submissions));
 
+            // Fetch leaderboard data
+            try {
+                const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const leaderboardData = await response.json();
+                const todaySubmissions = leaderboardData.submissions || [];
+                
+                // Find user's rank
+                const userRank = todaySubmissions.findIndex(sub => sub.nickname === this.nickname) + 1;
+                const totalUsers = todaySubmissions.length;
+                
+                // Calculate percentile
+                const percentile = totalUsers > 1 ? 
+                    Math.round(((totalUsers - userRank + 1) / totalUsers) * 100) : 100;
+
+                // Add ranking info to results
+                results.ranking = {
+                    rank: userRank,
+                    total: totalUsers,
+                    percentile: percentile
+                };
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+                // Continue without ranking info
+            }
+
             // Display the results
             this.displayResults(results);
 
@@ -440,6 +478,18 @@ class NBABudgetGame {
         }
 
         try {
+            // Create ranking message if available
+            let rankingMessage = '';
+            if (data.ranking) {
+                const { rank, total, percentile } = data.ranking;
+                rankingMessage = `
+                    <div class="ranking-info">
+                        <h3>Your Ranking</h3>
+                        <p>Great job! Your team was in the ${percentile}th percentile, ranking #${rank} out of ${total} users!</p>
+                    </div>
+                `;
+            }
+
             resultsDiv.innerHTML = `
                 <div class="results-container">
                     <h2>SEASON RESULTS</h2>
@@ -448,6 +498,7 @@ class NBABudgetGame {
                             <h3>Predicted Wins: ${data.wins}</h3>
                             <p>Season Outlook: ${data.outcome}</p>
                         </div>
+                        ${rankingMessage}
                         <div class="team-stats">
                             <h3>Team Statistics</h3>
                             <div class="stats-grid">
