@@ -484,6 +484,10 @@ class NBABudgetGame {
 
         resultsContainer.appendChild(leaderboard);
 
+        // Add buttons container
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'results-buttons';
+
         // Add close button
         const closeButton = document.createElement('button');
         closeButton.className = 'close-results';
@@ -492,7 +496,19 @@ class NBABudgetGame {
             const resultsSection = document.querySelector('.results-section');
             resultsSection.style.display = 'none';
         };
-        resultsContainer.appendChild(closeButton);
+
+        // Add history button
+        const historyButton = document.createElement('button');
+        historyButton.className = 'history-button';
+        historyButton.textContent = 'Previous Games';
+        historyButton.onclick = () => {
+            const historyContainer = document.getElementById('history-container');
+            historyContainer.style.display = historyContainer.style.display === 'none' ? 'block' : 'none';
+        };
+
+        buttonsContainer.appendChild(closeButton);
+        buttonsContainer.appendChild(historyButton);
+        resultsContainer.appendChild(buttonsContainer);
 
         resultsSection.appendChild(resultsContainer);
         resultsSection.style.display = 'block';
@@ -709,44 +725,75 @@ async function saveNickname() {
     }
 }
 
-// Add this to your HTML
-document.body.insertAdjacentHTML('beforeend', `
-    <div id="history-container" class="history-container">
-        <h3>Previous Games</h3>
-        <div class="history-list"></div>
-    </div>
-`);
-
-// Add this CSS
+// Update the CSS for the history container and buttons
 const style = document.createElement('style');
 style.textContent = `
+    .results-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .close-results, .history-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.2s;
+    }
+
+    .close-results {
+        background-color: #666;
+        color: white;
+    }
+
+    .history-button {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .close-results:hover {
+        background-color: #555;
+    }
+
+    .history-button:hover {
+        background-color: #45a049;
+    }
+
     .history-container {
+        display: none;
         position: fixed;
-        right: 20px;
-        top: 20px;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 15px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 20px;
         border-radius: 8px;
-        max-width: 300px;
+        max-width: 400px;
+        width: 90%;
         max-height: 80vh;
         overflow-y: auto;
+        z-index: 1000;
     }
 
     .history-container h3 {
         color: white;
-        margin: 0 0 10px 0;
-        font-size: 1.2em;
+        margin: 0 0 15px 0;
+        font-size: 1.4em;
+        text-align: center;
     }
 
     .history-list {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
     }
 
     .history-item {
         background: rgba(255, 255, 255, 0.1);
-        padding: 10px;
+        padding: 12px;
         border-radius: 4px;
         cursor: pointer;
         color: white;
@@ -761,14 +808,14 @@ style.textContent = `
     }
 
     .history-item.played {
-        border-left: 3px solid #4CAF50;
+        border-left: 4px solid #4CAF50;
     }
 
     .played-badge {
         background: #4CAF50;
-        padding: 2px 6px;
+        padding: 3px 8px;
         border-radius: 3px;
-        font-size: 0.8em;
+        font-size: 0.9em;
     }
 `;
 document.head.appendChild(style);
