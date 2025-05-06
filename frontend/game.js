@@ -227,6 +227,13 @@ class NBABudgetGame {
             this.simulateButton.classList.remove('active');
         }
         
+        // Add Previous Games button to team display
+        const historyButton = document.createElement('button');
+        historyButton.className = 'history-button';
+        historyButton.textContent = 'Previous Games';
+        historyButton.onclick = () => this.toggleHistoryView();
+        this.teamDisplay.appendChild(historyButton);
+        
         // Update the display without re-randomizing
         this.displayPlayers();
     }
@@ -501,10 +508,7 @@ class NBABudgetGame {
         const historyButton = document.createElement('button');
         historyButton.className = 'history-button';
         historyButton.textContent = 'Previous Games';
-        historyButton.onclick = () => {
-            const historyContainer = document.getElementById('history-container');
-            historyContainer.style.display = historyContainer.style.display === 'none' ? 'block' : 'none';
-        };
+        historyButton.onclick = () => this.toggleHistoryView();
 
         buttonsContainer.appendChild(closeButton);
         buttonsContainer.appendChild(historyButton);
@@ -565,6 +569,16 @@ class NBABudgetGame {
             } catch (error) {
                 console.error('Error checking nickname:', error);
                 alert('Error checking nickname availability. Please try again.');
+            }
+        }
+    }
+
+    toggleHistoryView() {
+        const historyContainer = document.getElementById('history-container');
+        if (historyContainer) {
+            historyContainer.style.display = historyContainer.style.display === 'none' ? 'block' : 'none';
+            if (historyContainer.style.display === 'block') {
+                loadHistory(); // Reload history when showing the view
             }
         }
     }
