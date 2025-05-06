@@ -539,7 +539,7 @@ function calculateExpectedWins(selectedPlayers) {
             blocks: selectedPlayers.reduce((sum, p) => 
                 sum + parseFloat(p['Blocks Per Game (Avg)']), 0),
             turnovers: selectedPlayers.reduce((sum, p) => 
-                sum + parseFloat(p['Turnovers Per Game (Avg)']), 0),
+                sum + parseFloat(p['TOV']), 0),
             fg_pct: selectedPlayers.reduce((sum, p) => 
                 sum + parseFloat(p['Field Goal % (Avg)']), 0) / selectedPlayers.length,
             ft_pct: selectedPlayers.reduce((sum, p) => 
