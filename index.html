@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ballin' on a Budget | BudgetGM</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ballin' on a Budget | BudgetGM</h1>
+            <p>Build your team with a $15 budget. Select 5 players.</p>
+        </header>
+
+        <div class="game-container">
+            <div class="how-to-play">
+                <h2>About the Game</h2>
+                <button id="how-to-play-btn" class="how-to-play-btn">How to Play</button>
+                <div id="how-to-play-content" class="how-to-play-content">
+                    <h2>Welcome to the NBA BudgetGM game!</h2>
+                    <p>You have $15 to make the best possible NBA team with the listed players. You can pick any players from any category, as long as you select 5 total players and spend no more than $15. Once you've selected them, click on the "Simulate Season" button located next to your team's player pool. Everyday this pool will update, so come back tomorrow to compete to make the best team again!</p>
+                    <p>Good luck!</p>
+                </div>
+                <button id="how-it-works-btn" class="how-to-play-btn">How It Works</button>
+                <div id="how-it-works-content" class="how-to-play-content">
+                    <h2>Game Mechanics</h2>
+                    <p>To make this game, I pulled data for hundreds of NBA players, including every player who averaged over 4 PPG, and programmatically gave them a rating between 0 and 100. I then divided them up into dollar categories based on that rating. The season is simulated using a model that adds wins to the chosen starting 5's season based on a range of those players' stats. This model currently derives its coefficients from a combination of a linear regression model's coefficients and trial and error simulation to give its projection, but I am always looking for ways to improve the model to give more realistic results.</p>
+                </div>
+                <button id="quick-tips-btn" class="how-to-play-btn">Quick Tips for Winning</button>
+                <div id="quick-tips-content" class="how-to-play-content">
+                    <h2>Strategy Tips</h2>
+                    <p>You will need some firepower to do the best most days, which means you may have to pay up for the $5 and $4 players... which also means you'll have to settle for some cheaper players. The model used to simulate wins values efficiency highly, so I would recommend going for highly efficient role players in the $2 and $1 categories if you select from those. If they aren't efficient scorers, they'll need to have to add some defensive and rebounding value!</p>
+                </div>
+            </div>
+
+            <div class="players-section">
+                <h2>Available Players</h2>
+                <div class="players-grid">
+                    <!-- Players will be dynamically added here -->
+                </div>
+            </div>
+
+            <div class="team-section">
+                <h2>Your Team</h2>
+                <div class="team-display"></div>
+                <div class="budget-display">
+                    <span>Remaining Budget: $<span id="remaining-budget">15</span></span>
+                </div>
+                <div class="nickname-section">
+                    <input type="text" id="nickname-input" placeholder="Enter a nickname" class="nickname-input">
+                    <button id="save-nickname" class="save-nickname-btn">Save</button>
+                </div>
+                <button id="simulate-button" class="simulate-button">Submit Team</button>
+            </div>
+        </div>
+
+        <div class="results-section" style="display: none;">
+            <h2>Final Team</h2>
+            <div class="final-team">
+                <!-- Final team will be shown here -->
+            </div>
+            <div class="team-stats">
+                <!-- Team stats will be shown here -->
+            </div>
+            <div class="season-results">
+                <!-- Season results will be shown here -->
+            </div>
+            <div class="player-stats">
+                <!-- Player statistics will be shown here -->
+            </div>
+        </div>
+    </div>
+    <div id="results"></div>
+    <div class="modal-backdrop"></div>
+    <script src="game.js"></script>
+</body>
+</html> 
