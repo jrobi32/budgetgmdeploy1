@@ -11,25 +11,127 @@ class NBABudgetGame {
         this.simulateButton = document.getElementById('simulate-button');
         this.resultsSection = document.querySelector('.results-section');
         
+        // Add nickname elements
+        this.nicknameInput = document.getElementById('nickname-input');
+        this.saveNicknameBtn = document.getElementById('save-nickname');
+        
+        // Load nickname from localStorage
+        this.nickname = localStorage.getItem('budgetgm_nickname');
+        if (this.nickname) {
+            this.nicknameInput.value = this.nickname;
+            this.nicknameInput.disabled = true;
+            this.saveNicknameBtn.disabled = true;
+        }
+
+        // Load selected team from localStorage
+        const savedTeam = localStorage.getItem('budgetgm_selected_team');
+        if (savedTeam) {
+            this.selectedPlayers = JSON.parse(savedTeam);
+            // Calculate remaining budget
+            this.remainingBudget = this.budget - this.selectedPlayers.reduce((sum, player) => 
+                sum + parseInt(player['Dollar Value']), 0);
+        }
+
+        // Check if user has already submitted today
+        this.checkDailySubmission();
+        
+        // Add event listener for nickname save
+        this.saveNicknameBtn.addEventListener('click', () => this.saveNickname());
+        
+        // Add event listeners for How to Play and How It Works buttons
+        this.howToPlayBtn = document.getElementById('how-to-play-btn');
+        this.howToPlayContent = document.getElementById('how-to-play-content');
+        this.howItWorksBtn = document.getElementById('how-it-works-btn');
+        this.howItWorksContent = document.getElementById('how-it-works-content');
+        this.quickTipsBtn = document.getElementById('quick-tips-btn');
+        this.quickTipsContent = document.getElementById('quick-tips-content');
+        
+        this.howToPlayBtn.addEventListener('click', () => {
+            this.howToPlayContent.style.display = this.howToPlayContent.style.display === 'block' ? 'none' : 'block';
+            this.howItWorksContent.style.display = 'none';
+            this.quickTipsContent.style.display = 'none';
+        });
+
+        this.howItWorksBtn.addEventListener('click', () => {
+            this.howItWorksContent.style.display = this.howItWorksContent.style.display === 'block' ? 'none' : 'block';
+            this.howToPlayContent.style.display = 'none';
+            this.quickTipsContent.style.display = 'none';
+        });
+
+        this.quickTipsBtn.addEventListener('click', () => {
+            this.quickTipsContent.style.display = this.quickTipsContent.style.display === 'block' ? 'none' : 'block';
+            this.howToPlayContent.style.display = 'none';
+            this.howItWorksContent.style.display = 'none';
+        });
+        
         this.loadPlayers();
         this.setupEventListeners();
     }
 
+    checkDailySubmission() {
+        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+        const today = new Date().toDateString();
+        
+        if (lastSubmission === today) {
+            this.simulateButton.textContent = 'View Results';
+            this.simulateButton.classList.add('active');
+        }
+    }
+
     async loadPlayers() {
         try {
-            const response = await fetch('nba_players_final_updated.csv');
+            console.log('Fetching players from backend...');
+            // Fetch the daily player pool from the backend
+            const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/players', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                mode: 'cors',
+                credentials: 'same-origin'
+            });
+            
+            console.log('Response status:', response.status);
+            
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             }
-            const csvText = await response.text();
-            const players = this.parseCSV(csvText);
-            console.log('Loaded players:', players.length);
+            
+            const players = await response.json();
+            console.log('Received players:', players);
+            
+            if (!Array.isArray(players) || players.length === 0) {
+                throw new Error('No players received from server');
+            }
+            
+            // Group players by dollar value
+            const playersByDollar = {};
+            players.forEach(player => {
+                const dollarValue = player['Dollar Value'];
+                if (!playersByDollar[dollarValue]) {
+                    playersByDollar[dollarValue] = [];
+                }
+                playersByDollar[dollarValue].push(player);
+            });
+            
+            // Update the game state
+            this.playersByDollar = playersByDollar;
             this.availablePlayers = players;
+            
+            // Update the UI
             this.initializeDisplayedPlayers();
             this.displayPlayers();
+            
+            // If we have a saved team, update the display
+            if (this.selectedPlayers.length > 0) {
+                this.updateDisplay();
+            }
         } catch (error) {
             console.error('Error loading players:', error);
-            this.playersGrid.innerHTML = `<div class="error">Error loading players: ${error.message}</div>`;
+            this.playersGrid.innerHTML = `<div class="error">Error loading players: ${error.message}. Please try again later.</div>`;
         }
     }
 
@@ -56,13 +158,17 @@ class NBABudgetGame {
             
             const playersContainer = document.createElement('div');
             playersContainer.className = 'players-container';
+            playersContainer.style.display = 'flex';
+            playersContainer.style.flexWrap = 'nowrap';
+            playersContainer.style.overflowX = 'auto';
+            playersContainer.style.gap = '20px';
+            playersContainer.style.padding = '10px';
             
             valuePlayers.forEach(player => {
                 const playerCard = document.createElement('div');
                 playerCard.className = 'player-card';
                 const isSelected = this.selectedPlayers.some(p => p['Player ID'] === player['Player ID']);
                 
-                // Use a more reliable image source
                 const imageUrl = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${player['Player ID']}.png`;
                 
                 if (isSelected) {
@@ -114,18 +220,32 @@ class NBABudgetGame {
             this.teamDisplay.appendChild(playerElement);
         });
 
-        // Show/hide simulate button
-        this.simulateButton.style.display = this.selectedPlayers.length === 5 ? 'block' : 'none';
+        // Update simulate button state
+        if (this.selectedPlayers.length === 5) {
+            this.simulateButton.classList.add('active');
+        } else {
+            this.simulateButton.classList.remove('active');
+        }
         
         // Update the display without re-randomizing
         this.displayPlayers();
     }
 
     removePlayer(player) {
+        // Check if user has already submitted today
+        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+        const today = new Date().toDateString();
+        if (lastSubmission === today) {
+            alert('You have already submitted your team for today. Come back tomorrow!');
+            return;
+        }
+
         const index = this.selectedPlayers.findIndex(p => p['Player ID'] === player['Player ID']);
         if (index !== -1) {
             this.remainingBudget += parseInt(player['Dollar Value']);
             this.selectedPlayers.splice(index, 1);
+            // Update localStorage after removing player
+            localStorage.setItem('budgetgm_selected_team', JSON.stringify(this.selectedPlayers));
             this.updateDisplay();
         }
     }
@@ -182,6 +302,14 @@ class NBABudgetGame {
     }
 
     selectPlayer(player) {
+        // Check if user has already submitted today
+        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+        const today = new Date().toDateString();
+        if (lastSubmission === today) {
+            alert('You have already submitted your team for today. Come back tomorrow!');
+            return;
+        }
+
         // Check if player is already selected
         if (this.selectedPlayers.some(p => p['Player ID'] === player['Player ID'])) {
             alert('This player is already on your team!');
@@ -201,59 +329,78 @@ class NBABudgetGame {
 
         this.selectedPlayers.push(player);
         this.remainingBudget -= cost;
+        // Save selected team to localStorage
+        localStorage.setItem('budgetgm_selected_team', JSON.stringify(this.selectedPlayers));
         this.updateDisplay();
     }
 
     async simulateSeason() {
+        if (!this.nickname) {
+            alert('Please enter a nickname first!');
+            return;
+        }
+
+        if (this.selectedPlayers.length !== 5) {
+            alert('Please select exactly 5 players!');
+            return;
+        }
+
+        // Check if user has already submitted today
+        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
+        const today = new Date().toDateString();
+        if (lastSubmission === today) {
+            // If already submitted, show results
+            this.showResults();
+            return;
+        }
+
         try {
-            let points = 0;
-            let rebounds = 0;
-            let assists = 0;
-            let steals = 0;
-            let blocks = 0;
-            let fgPercentages = [];  // Array to store FG percentages
-            let ftPercentages = [];  // Array to store FT percentages
-            let threePointPercentages = [];  // Array to store 3PT percentages
+            // Calculate wins using the simplified model
+            const predictedWins = calculateExpectedWins(this.selectedPlayers);
 
-            // Calculate team totals
-            this.selectedPlayers.forEach(player => {
-                points += parseFloat(player['Points Per Game (Avg)']);
-                rebounds += parseFloat(player['Rebounds Per Game (Avg)']);
-                assists += parseFloat(player['Assists Per Game (Avg)']);
-                steals += parseFloat(player['Steals Per Game (Avg)']);
-                blocks += parseFloat(player['Blocks Per Game (Avg)']);
-                
-                // Store percentages in arrays
-                fgPercentages.push(parseFloat(player['Field Goal % (Avg)']));
-                ftPercentages.push(parseFloat(player['Free Throw % (Avg)']));
-                threePointPercentages.push(parseFloat(player['Three Point % (Avg)']));
-            });
-
-            // Calculate average percentages
-            const fgPercentage = fgPercentages.reduce((a, b) => a + b, 0) / fgPercentages.length;
-            const ftPercentage = ftPercentages.reduce((a, b) => a + b, 0) / ftPercentages.length;
-            const threePointPercentage = threePointPercentages.reduce((a, b) => a + b, 0) / threePointPercentages.length;
-
-            // Prepare data for API request
-            const teamStats = {
-                PTS: points,
-                REB: rebounds,
-                AST: assists,
-                STL: steals,
-                BLK: blocks,
-                FG_PCT: fgPercentage,
-                FG3_PCT: threePointPercentage,
-                FT_PCT: ftPercentage,
-                PLUS_MINUS: 0  // Default value as it's not directly calculated
-            };
-
-            // Make API request to backend
-            const response = await fetch('https://nba-budget-game-backend.onrender.com/predict', {
+            // Submit the team
+            const submitResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(teamStats)
+                body: JSON.stringify({
+                    nickname: this.nickname,
+                    players: this.selectedPlayers,
+                    results: {
+                        wins: predictedWins,
+                        losses: 82 - predictedWins
+                    }
+                })
+            });
+
+            if (!submitResponse.ok) {
+                throw new Error(`HTTP error! status: ${submitResponse.status}`);
+            }
+
+            // Save submission date to localStorage
+            localStorage.setItem('budgetgm_last_submission', today);
+
+            // Update button text
+            this.simulateButton.textContent = 'View Results';
+            this.simulateButton.classList.add('active');
+
+            // Show results
+            this.showResults();
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error submitting team. Please try again later.');
+        }
+    }
+
+    async showResults() {
+        try {
+            const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
             });
 
             if (!response.ok) {
@@ -261,72 +408,104 @@ class NBABudgetGame {
             }
 
             const data = await response.json();
-            const predictedWins = data.predicted_wins;
-
-            console.log('Predicted Wins:', predictedWins);
-
-            // Format data for display
-            const results = {
-                wins: predictedWins,
-                total_ppg: points.toFixed(1),
-                total_rpg: rebounds.toFixed(1),
-                total_apg: assists.toFixed(1),
-                outcome: this.getSeasonOutcome(predictedWins)
-            };
-
-            // Display the results
-            this.displayResults(results);
-
+            this.displayResults(data);
         } catch (error) {
-            console.error('Error in season simulation:', error);
-            // Display default results if simulation fails
-            this.displayResults({
-                wins: 41,
-                total_ppg: '100.0',
-                total_rpg: '40.0',
-                total_apg: '20.0',
-                outcome: this.getSeasonOutcome(41)
-            });
+            console.error('Error fetching leaderboard:', error);
+            alert('Error fetching results. Please try again later.');
         }
     }
 
     displayResults(data) {
-        // Create results div if it doesn't exist
-        let resultsDiv = document.getElementById('results');
-        if (!resultsDiv) {
-            resultsDiv = document.createElement('div');
-            resultsDiv.id = 'results';
-            document.body.appendChild(resultsDiv);
-        }
+        const resultsSection = document.querySelector('.results-section');
+        resultsSection.innerHTML = '';
 
-        try {
-            resultsDiv.innerHTML = `
-                <div class="results-container">
-                    <h2>SEASON RESULTS</h2>
-                    <p>Projected Wins: ${data.wins}</p>
-                    <p>Team Stats:</p>
-                    <ul>
-                        <li>Points Per Game: ${data.total_ppg}</li>
-                        <li>Rebounds Per Game: ${data.total_rpg}</li>
-                        <li>Assists Per Game: ${data.total_apg}</li>
-                    </ul>
-                    <p>Season Outlook: ${data.outcome}</p>
-                    <button onclick="game.closeResults()" class="close-button">Close</button>
-                </div>
+        const resultsContainer = document.createElement('div');
+        resultsContainer.className = 'results-container';
+
+        // Add date
+        const dateHeader = document.createElement('h2');
+        dateHeader.textContent = `Results for ${data.date}`;
+        resultsContainer.appendChild(dateHeader);
+
+        // Create leaderboard
+        const leaderboard = document.createElement('div');
+        leaderboard.className = 'leaderboard';
+
+        // Add headers
+        const headerRow = document.createElement('div');
+        headerRow.className = 'leaderboard-row header';
+        headerRow.innerHTML = `
+            <div class="rank">Rank</div>
+            <div class="nickname">Nickname</div>
+            <div class="wins">Predicted Wins</div>
+            <div class="team">Team</div>
+            <div class="stats">Team Stats</div>
+        `;
+        leaderboard.appendChild(headerRow);
+
+        // Add submissions
+        data.submissions.forEach((submission, index) => {
+            const row = document.createElement('div');
+            row.className = 'leaderboard-row';
+            if (submission.nickname === this.nickname) {
+                row.classList.add('current-user');
+            }
+
+            const teamList = submission.players.map(player => 
+                `${player['Full Name']} ($${player['Dollar Value']})`
+            ).join('<br>');
+
+            // Calculate team stats
+            const teamStats = {
+                points: submission.players.reduce((sum, p) => sum + parseFloat(p['Points Per Game (Avg)']), 0).toFixed(1),
+                rebounds: submission.players.reduce((sum, p) => sum + parseFloat(p['Rebounds Per Game (Avg)']), 0).toFixed(1),
+                assists: submission.players.reduce((sum, p) => sum + parseFloat(p['Assists Per Game (Avg)']), 0).toFixed(1),
+                fg_pct: (submission.players.reduce((sum, p) => sum + parseFloat(p['Field Goal % (Avg)']), 0) / submission.players.length).toFixed(1),
+                turnovers: submission.players.reduce((sum, p) => sum + parseFloat(p['TOV']), 0).toFixed(1)
+            };
+
+            const statsDisplay = `
+                PPG: ${teamStats.points}<br>
+                RPG: ${teamStats.rebounds}<br>
+                APG: ${teamStats.assists}<br>
+                FG%: ${teamStats.fg_pct}%<br>
+                TOV: ${teamStats.turnovers}
             `;
-            resultsDiv.style.display = 'block';
-            resultsDiv.classList.add('active');
-        } catch (error) {
-            console.error('Error displaying results:', error);
-            alert('Error displaying results. Please try again.');
-        }
+
+            row.innerHTML = `
+                <div class="rank">${index + 1}</div>
+                <div class="nickname">${submission.nickname}</div>
+                <div class="wins">${submission.predicted_wins}</div>
+                <div class="team">${teamList}</div>
+                <div class="stats">${statsDisplay}</div>
+            `;
+            leaderboard.appendChild(row);
+        });
+
+        resultsContainer.appendChild(leaderboard);
+
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-results';
+        closeButton.textContent = 'Close';
+        closeButton.onclick = () => {
+            const resultsSection = document.querySelector('.results-section');
+            resultsSection.style.display = 'none';
+        };
+        resultsContainer.appendChild(closeButton);
+
+        resultsSection.appendChild(resultsContainer);
+        resultsSection.style.display = 'block';
     }
 
     closeResults() {
         const resultsDiv = document.getElementById('results');
+        const overlay = document.getElementById('results-overlay');
         if (resultsDiv) {
-            resultsDiv.style.display = 'none';
             resultsDiv.classList.remove('active');
+        }
+        if (overlay) {
+            overlay.classList.remove('active');
         }
     }
 
@@ -340,47 +519,53 @@ class NBABudgetGame {
     setupEventListeners() {
         this.simulateButton.addEventListener('click', () => this.simulateSeason());
     }
+
+    saveNickname() {
+        const nickname = this.nicknameInput.value.trim();
+        if (nickname) {
+            this.nickname = nickname;
+            localStorage.setItem('budgetgm_nickname', nickname);
+            this.nicknameInput.disabled = true;
+            this.saveNicknameBtn.disabled = true;
+        }
+    }
 }
 
 function calculateExpectedWins(selectedPlayers) {
     try {
         // Calculate team statistics
         const teamStats = {
-            points: selectedPlayers.reduce((sum, p) => 
-                sum + parseFloat(p['Points Per Game (Avg)']), 0),
-            rebounds: selectedPlayers.reduce((sum, p) => 
-                sum + parseFloat(p['Rebounds Per Game (Avg)']), 0),
-            assists: selectedPlayers.reduce((sum, p) => 
-                sum + parseFloat(p['Assists Per Game (Avg)']), 0),
-            steals: selectedPlayers.reduce((sum, p) => 
-                sum + parseFloat(p['Steals Per Game (Avg)']), 0),
-            blocks: selectedPlayers.reduce((sum, p) => 
-                sum + parseFloat(p['Blocks Per Game (Avg)']), 0),
-            fg_pct: selectedPlayers.reduce((sum, p) => 
-                sum + parseFloat(p['Field Goal % (Avg)']), 0) / selectedPlayers.length,
-            rating: selectedPlayers.reduce((sum, p) => 
-                sum + parseFloat(p['Rating']), 0) / selectedPlayers.length
+            points: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['Points Per Game (Avg)']), 0),
+            rebounds: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['Rebounds Per Game (Avg)']), 0),
+            assists: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['Assists Per Game (Avg)']), 0),
+            steals: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['Steals Per Game (Avg)']), 0),
+            blocks: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['Blocks Per Game (Avg)']), 0),
+            turnovers: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['TOV']), 0),
+            fg_pct: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['Field Goal % (Avg)']), 0) / selectedPlayers.length,
+            ft_pct: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['Free Throw % (Avg)']), 0) / selectedPlayers.length,
+            three_pct: selectedPlayers.reduce((sum, p) => sum + parseFloat(p['Three Point % (Avg)']), 0) / selectedPlayers.length
         };
 
-        // Calculate predicted wins using the trained model coefficients
-        let predictedWins = 0 +  // Start from 0
-            (teamStats.points * 3.1662) +  // Points coefficient
-            (teamStats.rating * 2.0314) +  // Rating coefficient
-            (teamStats.fg_pct * 0.5392) +  // FG% coefficient
-            (teamStats.rebounds * 0.4345) +  // Rebounds coefficient
-            (teamStats.assists * 0.3174) +  // Assists coefficient
-            (teamStats.blocks * 0.0795) +  // Blocks coefficient
-            (teamStats.steals * 0.0528);  // Steals coefficient
+        // Calculate predicted wins using adjusted coefficients
+        let predictedWins = 0 +  // Start from 0 instead of 41
+            (teamStats.points * 0.15) +  // Points coefficient
+            (teamStats.rebounds * 0.05) +  // Rebounds coefficient
+            (teamStats.assists * 0.06) +  // Assists coefficient
+            (teamStats.steals * 0.04) +  // Steals coefficient
+            (teamStats.blocks * 0.03) +  // Blocks coefficient
+            (teamStats.fg_pct * 0.08) +  // FG% coefficient
+            (teamStats.ft_pct * 0.04) +  // FT% coefficient
+            (teamStats.three_pct * 0.04);  // 3P% coefficient
 
         // Scale up the prediction since bench players will contribute some wins
-        predictedWins = predictedWins * 1.1;  // Assume starters account for about 90% of wins
+        predictedWins = predictedWins * 1.1;  // Reduced scaling factor
         
         // Ensure prediction stays within reasonable bounds and round to nearest integer
-        return Math.round(Math.max(0, Math.min(82, predictedWins)));
+        return Math.round(Math.max(0, Math.min(74, predictedWins)));
     } catch (error) {
         console.error('Error in win calculation:', error);
         console.log('Player data:', selectedPlayers); // Debug log
-        return 41; // Return league average if calculation fails
+        return 0; // Return 0 if calculation fails
     }
 }
 
