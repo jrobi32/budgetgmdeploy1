@@ -911,9 +911,9 @@ style.textContent = `
 
     .leaderboard-row {
         display: grid;
-        grid-template-columns: 50px 250px 180px 1fr;
+        grid-template-columns: 30px 150px 108px 1fr;
         align-items: center;
-        padding: 8px;
+        padding: 5px;
     }
 
     .leaderboard-row.header {
@@ -925,16 +925,16 @@ style.textContent = `
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        width: 180px;
+        width: 108px;
     }
 
     .team-player-image {
-        width: 60px;
-        height: 60px;
+        width: 36px;
+        height: 36px;
         object-fit: cover;
         border: 1px solid #666;
         border-radius: 2px;
-        margin-right: -10px;  /* Overlap images slightly */
+        margin-right: -6px;
     }
 
     .user-wins {
@@ -956,18 +956,18 @@ style.textContent = `
         width: 100%;
         max-width: 100%;
         margin: 0 auto;
-        padding: 20px;
+        padding: 12px;
         box-sizing: border-box;
     }
 
     .leaderboard {
         width: 100%;
         overflow-x: auto;
-        padding: 0 20px;
+        padding: 0 12px;
     }
 
     .stats {
-        margin-left: 30px;
+        margin-left: 18px;
     }
 `;
 document.head.appendChild(style);
