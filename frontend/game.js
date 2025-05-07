@@ -366,6 +366,12 @@ class NBABudgetGame {
     }
 
     async simulateSeason() {
+        // If button says "View Results", just show the results
+        if (this.simulateButton.textContent === 'View Results') {
+            this.showResults(currentDate);
+            return;
+        }
+
         if (!this.nickname) {
             alert('Please enter a nickname first!');
             return;
