@@ -902,15 +902,15 @@ style.textContent = `
         text-align: center;
         padding: 0;
         margin: 0;
-        font-size: 0.85em;
+        font-size: 1.1em;
         letter-spacing: -0.5px;
     }
 
     .stats-header {
         text-align: center;
-        margin-bottom: 5px;
+        margin-bottom: 3px;
         font-weight: bold;
-        font-size: 0.9em;
+        font-size: 1.1em;
         color: white;
     }
 
@@ -934,12 +934,12 @@ style.textContent = `
     }
 
     .team-player-image {
-        width: 61px;
-        height: 61px;
+        width: 79px;
+        height: 79px;
         object-fit: cover;
         border: 1px solid #666;
         border-radius: 2px;
-        margin-right: -6px;
+        margin-right: -8px;
     }
 
     .user-wins {
