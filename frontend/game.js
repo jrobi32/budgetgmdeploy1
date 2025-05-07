@@ -458,7 +458,20 @@ class NBABudgetGame {
             <div class="nickname">Nickname</div>
             <div class="wins">Predicted Wins</div>
             <div class="team">Team</div>
-            <div class="stats" style="color: white;">Team Stats</div>
+            <div class="stats">
+                <div class="stats-header">Team Stats</div>
+                <div class="stats-matrix">
+                    <div class="stats-row">
+                        <span>PPG</span>
+                        <span>RPG</span>
+                        <span>APG</span>
+                        <span>FG%</span>
+                        <span>TOV</span>
+                        <span>BLK</span>
+                        <span>STL</span>
+                    </div>
+                </div>
+            </div>
         `;
         leaderboard.appendChild(headerRow);
 
@@ -470,9 +483,11 @@ class NBABudgetGame {
                 row.classList.add('current-user');
             }
 
-            const teamList = submission.players.map(player => 
-                `${player['Full Name']} ($${player['Dollar Value']})`
-            ).join('<br>');
+            // Get last names and dollar values
+            const teamList = submission.players.map(player => {
+                const lastName = player['Full Name'].split(' ').pop();
+                return `${lastName} ($${player['Dollar Value']})`;
+            }).join('<br>');
 
             // Calculate team stats
             const teamStats = {
@@ -480,15 +495,23 @@ class NBABudgetGame {
                 rebounds: submission.players.reduce((sum, p) => sum + parseFloat(p['Rebounds Per Game (Avg)']), 0).toFixed(1),
                 assists: submission.players.reduce((sum, p) => sum + parseFloat(p['Assists Per Game (Avg)']), 0).toFixed(1),
                 fg_pct: submission.players.reduce((sum, p) => sum + parseFloat(p['Field Goal % (Avg)']), 0) / submission.players.length,
-                turnovers: submission.players.reduce((sum, p) => sum + parseFloat(p['TOV']), 0).toFixed(1)
+                turnovers: submission.players.reduce((sum, p) => sum + parseFloat(p['TOV']), 0).toFixed(1),
+                blocks: submission.players.reduce((sum, p) => sum + parseFloat(p['Blocks Per Game (Avg)']), 0).toFixed(1),
+                steals: submission.players.reduce((sum, p) => sum + parseFloat(p['Steals Per Game (Avg)']), 0).toFixed(1)
             };
 
             const statsDisplay = `
-                PPG: ${teamStats.points}<br>
-                RPG: ${teamStats.rebounds}<br>
-                APG: ${teamStats.assists}<br>
-                FG%: ${(teamStats.fg_pct * 100).toFixed(1)}%<br>
-                TOV: ${teamStats.turnovers}
+                <div class="stats-matrix">
+                    <div class="stats-row">
+                        <span>${teamStats.points}</span>
+                        <span>${teamStats.rebounds}</span>
+                        <span>${teamStats.assists}</span>
+                        <span>${(teamStats.fg_pct * 100).toFixed(1)}%</span>
+                        <span>${teamStats.turnovers}</span>
+                        <span>${teamStats.blocks}</span>
+                        <span>${teamStats.steals}</span>
+                    </div>
+                </div>
             `;
 
             row.innerHTML = `
@@ -606,14 +629,14 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.65) +  // Points coefficient (0.22 * 2.5)
+            (teamStats.points * 0.63) +  // Points coefficient (0.22 * 2.5)
             (teamStats.rebounds * 0.18) +  // Rebounds coefficient (0.08 * 2.5)
             (teamStats.assists * 0.09) +  // Assists coefficient (0.04 * 2.5)
             (teamStats.steals * 0.13) +  // Steals coefficient (0.06 * 2.5)
             (teamStats.blocks * 0.10) +  // Blocks coefficient (0.04 * 2.5)
-            (teamStats.fg_pct * 0.25) +  // FG% coefficient (0.1 * 2.5)
+            (teamStats.fg_pct * 0.20) +  // FG% coefficient (0.1 * 2.5)
             (teamStats.ft_pct * 0.08) +  // FT% coefficient (0.04 * 2.5)
-            (teamStats.three_pct * 0.13) -  // 3P% coefficient (0.06 * 2.5)
+            (teamStats.three_pct * 0.11) -  // 3P% coefficient (0.06 * 2.5)
             (teamStats.turnovers * 0.19);   // Negative impact of turnovers (0.075 * 2.5)
 
         // Scale up the prediction since bench players will contribute some wins
@@ -858,6 +881,34 @@ style.textContent = `
         padding: 3px 8px;
         border-radius: 3px;
         font-size: 0.9em;
+    }
+
+    .stats-matrix {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-family: monospace;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+        text-align: center;
+    }
+
+    .stats-header {
+        text-align: center;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .leaderboard-row .stats {
+        min-width: 400px;
+    }
+
+    .team {
+        min-width: 150px;
     }
 `;
 document.head.appendChild(style);
