@@ -790,7 +790,7 @@ async function saveNickname() {
     }
 }
 
-// Update the CSS for the history container and buttons
+// Update the CSS for better layout
 const style = document.createElement('style');
 style.textContent = `
     .results-buttons {
@@ -888,12 +888,13 @@ style.textContent = `
         flex-direction: column;
         gap: 5px;
         font-family: monospace;
+        font-size: 0.9em;
     }
 
     .stats-row {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 10px;
+        gap: 8px;
         text-align: center;
     }
 
@@ -901,14 +902,45 @@ style.textContent = `
         text-align: center;
         margin-bottom: 5px;
         font-weight: bold;
+        font-size: 0.9em;
     }
 
-    .leaderboard-row .stats {
-        min-width: 400px;
+    .leaderboard-row {
+        display: grid;
+        grid-template-columns: 50px 120px 60px 80px 1fr;
+        gap: 10px;
+        align-items: center;
+        padding: 8px;
+    }
+
+    .leaderboard-row.header {
+        font-weight: bold;
+        border-bottom: 2px solid #666;
     }
 
     .team {
-        min-width: 150px;
+        display: flex;
+        gap: 1px;
+        align-items: center;
+    }
+
+    .team-player-image {
+        width: 20px;
+        height: 20px;
+        object-fit: cover;
+        border: 1px solid #666;
+        border-radius: 2px;
+    }
+
+    .results-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .leaderboard {
+        width: 100%;
+        overflow-x: auto;
     }
 `;
 document.head.appendChild(style);
