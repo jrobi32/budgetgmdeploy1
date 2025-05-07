@@ -906,7 +906,7 @@ style.textContent = `
     .leaderboard-row {
         display: grid;
         grid-template-columns: 50px 250px 120px 1fr;
-        gap: 15px;
+        gap: 8px;
         align-items: center;
         padding: 8px;
     }
@@ -920,6 +920,7 @@ style.textContent = `
         display: flex;
         gap: 1px;
         align-items: center;
+        padding-left: 0;
     }
 
     .team-player-image {
@@ -933,6 +934,7 @@ style.textContent = `
     .user-wins {
         font-size: 0.9em;
         white-space: nowrap;
+        padding-right: 0;
     }
 
     .user-wins .nickname {
@@ -946,9 +948,11 @@ style.textContent = `
     }
 
     .results-container {
-        max-width: 900px;
+        width: 100%;
+        max-width: 100%;
         margin: 0 auto;
         padding: 20px;
+        box-sizing: border-box;
     }
 
     .leaderboard {
