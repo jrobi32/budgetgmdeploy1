@@ -483,11 +483,11 @@ class NBABudgetGame {
                 row.classList.add('current-user');
             }
 
-            // Get last names and dollar values in a comma-separated list
-            const teamList = submission.players.map(player => {
-                const lastName = player['Full Name'].split(' ').pop();
-                return `${lastName} ($${player['Dollar Value']})`;
-            }).join(', ');
+            // Create team images container
+            const teamImages = submission.players.map(player => {
+                const imageUrl = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${player['Player ID']}.png`;
+                return `<img src="${imageUrl}" alt="${player['Full Name']}" onerror="this.src='https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'" class="team-player-image">`;
+            }).join('');
 
             // Calculate team stats
             const teamStats = {
@@ -518,7 +518,7 @@ class NBABudgetGame {
                 <div class="rank">${index + 1}</div>
                 <div class="nickname">${submission.nickname}</div>
                 <div class="wins">${submission.predicted_wins}</div>
-                <div class="team">${teamList}</div>
+                <div class="team">${teamImages}</div>
                 <div class="stats">${statsDisplay}</div>
             `;
             leaderboard.appendChild(row);
@@ -629,13 +629,13 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.63) +  // Points coefficient (0.22 * 2.5)
+            (teamStats.points * 0.58) +  // Points coefficient (0.22 * 2.5)
             (teamStats.rebounds * 0.18) +  // Rebounds coefficient (0.08 * 2.5)
-            (teamStats.assists * 0.09) +  // Assists coefficient (0.04 * 2.5)
+            (teamStats.assists * 0.08) +  // Assists coefficient (0.04 * 2.5)
             (teamStats.steals * 0.13) +  // Steals coefficient (0.06 * 2.5)
             (teamStats.blocks * 0.10) +  // Blocks coefficient (0.04 * 2.5)
             (teamStats.fg_pct * 0.20) +  // FG% coefficient (0.1 * 2.5)
-            (teamStats.ft_pct * 0.08) +  // FT% coefficient (0.04 * 2.5)
+            (teamStats.ft_pct * 0.06) +  // FT% coefficient (0.04 * 2.5)
             (teamStats.three_pct * 0.11) -  // 3P% coefficient (0.06 * 2.5)
             (teamStats.turnovers * 0.19);   // Negative impact of turnovers (0.075 * 2.5)
 
