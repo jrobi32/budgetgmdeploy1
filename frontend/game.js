@@ -161,6 +161,8 @@ class NBABudgetGame {
             const selectedPlayers = this.getRandomPlayers(valuePlayers, 5);
             this.displayedPlayers.push(...selectedPlayers);
         }
+        
+        console.log('Initialized displayed players:', this.displayedPlayers.length);
     }
 
     displayPlayers() {
@@ -682,10 +684,14 @@ async function loadHistory() {
 // Add this function to load a specific game state
 async function loadGameState(date) {
     try {
+        console.log('Loading game state for date:', date);
+        
         // Fetch the game state for the selected date
         const response = await fetch(`${API_BASE_URL}/api/game-state/${date}`);
         if (!response.ok) throw new Error('Failed to load game state');
         const data = await response.json();
+        
+        console.log('Received game state data:', data);
         
         // Store the current date and player stats
         currentDate = date;
@@ -695,8 +701,9 @@ async function loadGameState(date) {
         game.selectedPlayers = [];
         game.remainingBudget = game.budget;
         
-        // Update the display
-        game.updateDisplay();
+        // Update the display with the new player pool
+        game.initializeDisplayedPlayers();
+        game.displayPlayers();
         
         // Check if user has already submitted for this date
         const submissionsResponse = await fetch(`${API_BASE_URL}/api/history?nickname=${encodeURIComponent(game.nickname)}`);
