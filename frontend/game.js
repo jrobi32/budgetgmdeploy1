@@ -614,6 +614,10 @@ class NBABudgetGame {
                 loadHistory(); // Reload history when showing the view
             } else {
                 historyContainer.style.display = 'none';
+                // When closing history view, reload current game state
+                const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
+                const today = new Date(eastern).toISOString().split('T')[0];
+                loadGameState(today);
             }
         }
     }
@@ -717,12 +721,18 @@ async function loadGameState(date) {
                     card.style.pointerEvents = 'none';
                     card.style.opacity = '0.7';
                 });
+                // Update button text
+                game.simulateButton.textContent = 'View Results';
+                game.simulateButton.classList.add('active');
             } else {
                 // Enable player selection for unplayed dates
                 document.querySelectorAll('.player-card').forEach(card => {
                     card.style.pointerEvents = 'auto';
                     card.style.opacity = '1';
                 });
+                // Update button text
+                game.simulateButton.textContent = 'Submit Team';
+                game.simulateButton.classList.remove('active');
             }
         }
     } catch (error) {
@@ -752,7 +762,7 @@ async function showResults(date = null) {
         }
 
         const data = await response.json();
-        this.displayResults(data);
+        game.displayResults(data);
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         alert('Error fetching results. Please try again later.');
