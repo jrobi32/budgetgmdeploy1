@@ -911,8 +911,7 @@ style.textContent = `
 
     .leaderboard-row {
         display: grid;
-        grid-template-columns: 50px 250px 120px 1fr;
-        gap: 0px 20px;
+        grid-template-columns: 50px 250px 180px 1fr;
         align-items: center;
         padding: 8px;
     }
@@ -924,9 +923,9 @@ style.textContent = `
 
     .team {
         display: flex;
-        gap: 1px;
         align-items: center;
-        padding-left: 0;
+        justify-content: flex-start;
+        width: 180px;
     }
 
     .team-player-image {
@@ -935,13 +934,12 @@ style.textContent = `
         object-fit: cover;
         border: 1px solid #666;
         border-radius: 2px;
+        margin-right: -10px;  /* Overlap images slightly */
     }
 
     .user-wins {
         font-size: 0.9em;
         white-space: nowrap;
-        padding-right: 0;
-        margin-right: -10px;
     }
 
     .user-wins .nickname {
@@ -965,10 +963,11 @@ style.textContent = `
     .leaderboard {
         width: 100%;
         overflow-x: auto;
+        padding: 0 20px;
     }
 
     .stats {
-        padding-left: 20px;
+        margin-left: 30px;
     }
 `;
 document.head.appendChild(style);
