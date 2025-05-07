@@ -892,13 +892,12 @@ style.textContent = `
     .stats-row {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 2px;
+        gap: 1px;
         text-align: center;
-        color: white;
     }
 
     .stats-row span {
-        color: white;
+        color: black;
     }
 
     .stats-header {
@@ -912,7 +911,7 @@ style.textContent = `
     .leaderboard-row {
         display: grid;
         grid-template-columns: 50px 250px 120px 1fr;
-        gap: 4px 20px;
+        gap: 2px 20px;
         align-items: center;
         padding: 8px;
     }
