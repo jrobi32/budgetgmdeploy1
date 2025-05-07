@@ -884,21 +884,26 @@ style.textContent = `
     .stats-matrix {
         display: flex;
         flex-direction: column;
-        gap: 5px;
         font-family: monospace;
         font-size: 0.9em;
+        width: fit-content;
+        margin: 0 auto;
     }
 
     .stats-row {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 0px;
-        text-align: center;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
     }
 
     .stats-row span {
         color: black;
-        padding: 0 2px;
+        min-width: 27px;
+        text-align: center;
+        padding: 0;
+        margin: 0;
+        font-size: 0.85em;
+        letter-spacing: -0.5px;
     }
 
     .stats-header {
@@ -929,8 +934,8 @@ style.textContent = `
     }
 
     .team-player-image {
-        width: 36px;
-        height: 36px;
+        width: 61px;
+        height: 61px;
         object-fit: cover;
         border: 1px solid #666;
         border-radius: 2px;
