@@ -906,7 +906,7 @@ style.textContent = `
     .leaderboard-row {
         display: grid;
         grid-template-columns: 50px 250px 120px 1fr;
-        gap: 4px;
+        gap: 4px 20px;
         align-items: center;
         padding: 8px;
     }
