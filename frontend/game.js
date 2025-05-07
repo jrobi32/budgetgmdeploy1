@@ -456,7 +456,7 @@ class NBABudgetGame {
         headerRow.innerHTML = `
             <div class="rank">Rank</div>
             <div class="nickname">Nickname</div>
-            <div class="wins">Predicted Wins</div>
+            <div class="wins">Wins</div>
             <div class="team">Team</div>
             <div class="stats">
                 <div class="stats-header">Team Stats</div>
@@ -483,11 +483,11 @@ class NBABudgetGame {
                 row.classList.add('current-user');
             }
 
-            // Get last names and dollar values
+            // Get last names and dollar values in a comma-separated list
             const teamList = submission.players.map(player => {
                 const lastName = player['Full Name'].split(' ').pop();
                 return `${lastName} ($${player['Dollar Value']})`;
-            }).join('<br>');
+            }).join(', ');
 
             // Calculate team stats
             const teamStats = {
