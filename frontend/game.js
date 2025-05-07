@@ -515,7 +515,7 @@ class NBABudgetGame {
 
             row.innerHTML = `
                 <div class="rank">${index + 1}</div>
-                <div class="user-wins">${submission.nickname} won ${submission.predicted_wins} games</div>
+                <div class="user-wins"><span class="nickname">${submission.nickname}</span> won <span class="wins">${submission.predicted_wins}</span> games</div>
                 <div class="team">${teamImages}</div>
                 <div class="stats">${statsDisplay}</div>
             `;
@@ -905,8 +905,8 @@ style.textContent = `
 
     .leaderboard-row {
         display: grid;
-        grid-template-columns: 50px 200px 100px 1fr;
-        gap: 10px;
+        grid-template-columns: 50px 250px 120px 1fr;
+        gap: 15px;
         align-items: center;
         padding: 8px;
     }
@@ -935,8 +935,18 @@ style.textContent = `
         white-space: nowrap;
     }
 
+    .user-wins .nickname {
+        font-weight: bold;
+        color: #4CAF50;
+    }
+
+    .user-wins .wins {
+        font-weight: bold;
+        color: #2196F3;
+    }
+
     .results-container {
-        max-width: 700px;
+        max-width: 900px;
         margin: 0 auto;
         padding: 20px;
     }
