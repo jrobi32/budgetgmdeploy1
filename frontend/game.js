@@ -374,21 +374,12 @@ class NBABudgetGame {
             return;
         }
 
-        // Check if user has already submitted today
-        const lastSubmission = localStorage.getItem('budgetgm_last_submission');
-        const today = new Date().toDateString();
-        if (lastSubmission === today) {
-            // If already submitted, show results
-            this.showResults();
-            return;
-        }
-
         try {
             // Calculate wins using the simplified model
             const predictedWins = calculateExpectedWins(this.selectedPlayers);
 
             // Submit the team
-            const submitResponse = await fetch('https://budgetbackenddeploy1.onrender.com/api/submit-team', {
+            const submitResponse = await fetch(`${API_BASE_URL}/api/submit-team`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -399,7 +390,8 @@ class NBABudgetGame {
                     results: {
                         wins: predictedWins,
                         losses: 82 - predictedWins
-                    }
+                    },
+                    date: currentDate // Include the current date in the submission
                 })
             });
 
@@ -407,15 +399,12 @@ class NBABudgetGame {
                 throw new Error(`HTTP error! status: ${submitResponse.status}`);
             }
 
-            // Save submission date to localStorage
-            localStorage.setItem('budgetgm_last_submission', today);
-
             // Update button text
             this.simulateButton.textContent = 'View Results';
             this.simulateButton.classList.add('active');
 
-            // Show results
-            this.showResults();
+            // Show results for the current date
+            this.showResults(currentDate);
 
         } catch (error) {
             console.error('Error:', error);
@@ -423,9 +412,15 @@ class NBABudgetGame {
         }
     }
 
-    async showResults() {
+    async showResults(date = null) {
         try {
-            const response = await fetch('https://budgetbackenddeploy1.onrender.com/api/leaderboard', {
+            // If no date provided, use current date
+            if (!date) {
+                const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
+                date = new Date(eastern).toISOString().split('T')[0];
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/leaderboard?date=${date}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -687,6 +682,7 @@ async function loadHistory() {
 // Add this function to load a specific game state
 async function loadGameState(date) {
     try {
+        // Fetch the game state for the selected date
         const response = await fetch(`${API_BASE_URL}/api/game-state/${date}`);
         if (!response.ok) throw new Error('Failed to load game state');
         const data = await response.json();
@@ -708,11 +704,17 @@ async function loadGameState(date) {
             const historyData = await submissionsResponse.json();
             if (historyData.played_dates.includes(date)) {
                 // If user has already submitted, show results
-                game.showResults();
+                game.showResults(date);
                 // Disable player selection
                 document.querySelectorAll('.player-card').forEach(card => {
                     card.style.pointerEvents = 'none';
                     card.style.opacity = '0.7';
+                });
+            } else {
+                // Enable player selection for unplayed dates
+                document.querySelectorAll('.player-card').forEach(card => {
+                    card.style.pointerEvents = 'auto';
+                    card.style.opacity = '1';
                 });
             }
         }
@@ -722,7 +724,35 @@ async function loadGameState(date) {
     }
 }
 
-// Add this function to update the history view
+// Update the showResults function to handle historical dates
+async function showResults(date = null) {
+    try {
+        // If no date provided, use current date
+        if (!date) {
+            const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
+            date = new Date(eastern).toISOString().split('T')[0];
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/leaderboard?date=${date}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        this.displayResults(data);
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        alert('Error fetching results. Please try again later.');
+    }
+}
+
+// Update the updateHistoryView function to properly show played dates
 function updateHistoryView() {
     const historyContainer = document.getElementById('history-container');
     if (!historyContainer) return;
