@@ -924,8 +924,8 @@ style.textContent = `
     }
 
     .team-player-image {
-        width: 40px;
-        height: 40px;
+        width: 60px;
+        height: 60px;
         object-fit: cover;
         border: 1px solid #666;
         border-radius: 2px;
