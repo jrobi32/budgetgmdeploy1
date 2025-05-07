@@ -455,8 +455,7 @@ class NBABudgetGame {
         headerRow.className = 'leaderboard-row header';
         headerRow.innerHTML = `
             <div class="rank">Rank</div>
-            <div class="nickname">Nickname</div>
-            <div class="wins">Wins</div>
+            <div class="user-wins">User/Wins</div>
             <div class="team">Team</div>
             <div class="stats">
                 <div class="stats-header">Team Stats</div>
@@ -516,8 +515,7 @@ class NBABudgetGame {
 
             row.innerHTML = `
                 <div class="rank">${index + 1}</div>
-                <div class="nickname">${submission.nickname}</div>
-                <div class="wins">${submission.predicted_wins}</div>
+                <div class="user-wins">${submission.nickname} won ${submission.predicted_wins} games</div>
                 <div class="team">${teamImages}</div>
                 <div class="stats">${statsDisplay}</div>
             `;
@@ -629,12 +627,12 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.58) +  // Points coefficient (0.22 * 2.5)
+            (teamStats.points * 0.55) +  // Points coefficient (0.22 * 2.5)
             (teamStats.rebounds * 0.18) +  // Rebounds coefficient (0.08 * 2.5)
             (teamStats.assists * 0.08) +  // Assists coefficient (0.04 * 2.5)
             (teamStats.steals * 0.13) +  // Steals coefficient (0.06 * 2.5)
             (teamStats.blocks * 0.10) +  // Blocks coefficient (0.04 * 2.5)
-            (teamStats.fg_pct * 0.20) +  // FG% coefficient (0.1 * 2.5)
+            (teamStats.fg_pct * 0.18) +  // FG% coefficient (0.1 * 2.5)
             (teamStats.ft_pct * 0.06) +  // FT% coefficient (0.04 * 2.5)
             (teamStats.three_pct * 0.11) -  // 3P% coefficient (0.06 * 2.5)
             (teamStats.turnovers * 0.19);   // Negative impact of turnovers (0.075 * 2.5)
@@ -907,7 +905,7 @@ style.textContent = `
 
     .leaderboard-row {
         display: grid;
-        grid-template-columns: 50px 120px 60px 80px 1fr;
+        grid-template-columns: 50px 200px 100px 1fr;
         gap: 10px;
         align-items: center;
         padding: 8px;
@@ -925,11 +923,16 @@ style.textContent = `
     }
 
     .team-player-image {
-        width: 20px;
-        height: 20px;
+        width: 40px;
+        height: 40px;
         object-fit: cover;
         border: 1px solid #666;
         border-radius: 2px;
+    }
+
+    .user-wins {
+        font-size: 0.9em;
+        white-space: nowrap;
     }
 
     .results-container {
