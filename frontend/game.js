@@ -224,6 +224,18 @@ class NBABudgetGame {
                 <span>${player['Full Name']} ($${player['Dollar Value']})</span>
                 <button onclick="game.removePlayer(${JSON.stringify(player).replace(/"/g, '&quot;')})">×</button>
             `;
+            
+            // Add click handler to remove player when clicking anywhere on the player element
+            playerElement.addEventListener('click', (e) => {
+                // Don't trigger if clicking the remove button (it has its own handler)
+                if (e.target.tagName !== 'BUTTON') {
+                    this.removePlayer(player);
+                }
+            });
+            
+            // Add cursor pointer to indicate clickability
+            playerElement.style.cursor = 'pointer';
+            
             this.teamDisplay.appendChild(playerElement);
         });
 
@@ -594,12 +606,12 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.73) +  // Points coefficient (0.22 * 2.5)
+            (teamStats.points * 0.65) +  // Points coefficient (0.22 * 2.5)
             (teamStats.rebounds * 0.18) +  // Rebounds coefficient (0.08 * 2.5)
             (teamStats.assists * 0.09) +  // Assists coefficient (0.04 * 2.5)
             (teamStats.steals * 0.13) +  // Steals coefficient (0.06 * 2.5)
-            (teamStats.blocks * 0.09) +  // Blocks coefficient (0.04 * 2.5)
-            (teamStats.fg_pct * 0.24) +  // FG% coefficient (0.1 * 2.5)
+            (teamStats.blocks * 0.10) +  // Blocks coefficient (0.04 * 2.5)
+            (teamStats.fg_pct * 0.25) +  // FG% coefficient (0.1 * 2.5)
             (teamStats.ft_pct * 0.08) +  // FT% coefficient (0.04 * 2.5)
             (teamStats.three_pct * 0.13) -  // 3P% coefficient (0.06 * 2.5)
             (teamStats.turnovers * 0.19);   // Negative impact of turnovers (0.075 * 2.5)
