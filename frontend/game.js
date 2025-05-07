@@ -888,6 +888,7 @@ style.textContent = `
         font-size: 0.9em;
         width: fit-content;
         margin: 0 auto;
+        padding: 0 10px;
     }
 
     .stats-row {
@@ -898,7 +899,7 @@ style.textContent = `
 
     .stats-row span {
         color: black;
-        min-width: 27px;
+        min-width: 68px;
         text-align: center;
         padding: 0;
         margin: 0;
@@ -937,7 +938,6 @@ style.textContent = `
         width: 79px;
         height: 79px;
         object-fit: cover;
-        border: 1px solid #666;
         border-radius: 2px;
         margin-right: -8px;
     }
