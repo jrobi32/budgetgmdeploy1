@@ -1,3 +1,5 @@
+const API_BASE_URL = 'https://budgetbackenddeploy1.onrender.com';
+
 class NBABudgetGame {
     constructor() {
         this.budget = 15;
@@ -67,6 +69,14 @@ class NBABudgetGame {
         this.loadPlayers();
         this.setupEventListeners();
 
+        // Create history container if it doesn't exist
+        if (!document.getElementById('history-container')) {
+            const historyContainer = document.createElement('div');
+            historyContainer.id = 'history-container';
+            historyContainer.className = 'history-container';
+            document.body.appendChild(historyContainer);
+        }
+        
         // Add history button below simulate button
         const historyButton = document.createElement('button');
         historyButton.className = 'history-button';
@@ -602,9 +612,11 @@ class NBABudgetGame {
     toggleHistoryView() {
         const historyContainer = document.getElementById('history-container');
         if (historyContainer) {
-            historyContainer.style.display = historyContainer.style.display === 'none' ? 'block' : 'none';
-            if (historyContainer.style.display === 'block') {
+            if (historyContainer.style.display === 'none' || !historyContainer.style.display) {
+                historyContainer.style.display = 'block';
                 loadHistory(); // Reload history when showing the view
+            } else {
+                historyContainer.style.display = 'none';
             }
         }
     }
@@ -660,7 +672,7 @@ let playedDates = [];
 // Add this function to load history
 async function loadHistory() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/history?nickname=${encodeURIComponent(currentNickname)}`);
+        const response = await fetch(`${API_BASE_URL}/api/history?nickname=${encodeURIComponent(game.nickname)}`);
         if (!response.ok) throw new Error('Failed to load history');
         const data = await response.json();
         availableDates = data.dates;
@@ -668,6 +680,7 @@ async function loadHistory() {
         updateHistoryView();
     } catch (error) {
         console.error('Error loading history:', error);
+        alert('Error loading history. Please try again later.');
     }
 }
 
@@ -680,7 +693,7 @@ async function loadGameState(date) {
         
         // Store the current date and player stats
         currentDate = date;
-        playerStats = data.player_stats;
+        game.availablePlayers = data.player_stats;
         
         // Clear selected players when loading a historical game
         game.selectedPlayers = [];
