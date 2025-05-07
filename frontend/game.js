@@ -892,7 +892,7 @@ style.textContent = `
     .stats-row {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 8px;
+        gap: 2px;
         text-align: center;
     }
 
