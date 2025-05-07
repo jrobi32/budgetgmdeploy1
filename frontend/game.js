@@ -894,6 +894,11 @@ style.textContent = `
         grid-template-columns: repeat(7, 1fr);
         gap: 2px;
         text-align: center;
+        color: white;
+    }
+
+    .stats-row span {
+        color: white;
     }
 
     .stats-header {
@@ -901,6 +906,7 @@ style.textContent = `
         margin-bottom: 5px;
         font-weight: bold;
         font-size: 0.9em;
+        color: white;
     }
 
     .leaderboard-row {
