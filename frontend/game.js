@@ -892,12 +892,13 @@ style.textContent = `
     .stats-row {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 1px;
+        gap: 0px;
         text-align: center;
     }
 
     .stats-row span {
         color: black;
+        padding: 0 2px;
     }
 
     .stats-header {
@@ -911,7 +912,7 @@ style.textContent = `
     .leaderboard-row {
         display: grid;
         grid-template-columns: 50px 250px 120px 1fr;
-        gap: 2px 20px;
+        gap: 0px 20px;
         align-items: center;
         padding: 8px;
     }
@@ -940,6 +941,7 @@ style.textContent = `
         font-size: 0.9em;
         white-space: nowrap;
         padding-right: 0;
+        margin-right: -10px;
     }
 
     .user-wins .nickname {
@@ -963,6 +965,10 @@ style.textContent = `
     .leaderboard {
         width: 100%;
         overflow-x: auto;
+    }
+
+    .stats {
+        padding-left: 20px;
     }
 `;
 document.head.appendChild(style);
