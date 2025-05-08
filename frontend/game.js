@@ -507,9 +507,12 @@ class NBABudgetGame {
                 </div>
             `;
 
+            // Use the wins from the submission results
+            const wins = submission.results.wins;
+
             row.innerHTML = `
                 <div class="rank">${index + 1}</div>
-                <div class="user-wins"><span class="nickname">${submission.nickname}</span> won <span class="wins">${submission.predicted_wins}</span> games</div>
+                <div class="user-wins"><span class="nickname">${submission.nickname}</span> won <span class="wins">${wins}</span> games</div>
                 <div class="team">${teamImages}</div>
                 <div class="stats">${statsDisplay}</div>
             `;
