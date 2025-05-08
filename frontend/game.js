@@ -68,21 +68,6 @@ class NBABudgetGame {
         
         this.loadPlayers();
         this.setupEventListeners();
-
-        // Create history container if it doesn't exist
-        if (!document.getElementById('history-container')) {
-            const historyContainer = document.createElement('div');
-            historyContainer.id = 'history-container';
-            historyContainer.className = 'history-container';
-            document.body.appendChild(historyContainer);
-        }
-        
-        // Add history button below simulate button
-        const historyButton = document.createElement('button');
-        historyButton.className = 'history-button';
-        historyButton.textContent = 'Previous Games';
-        historyButton.onclick = () => this.toggleHistoryView();
-        this.simulateButton.parentNode.insertBefore(historyButton, this.simulateButton.nextSibling);
     }
 
     checkDailySubmission() {
@@ -368,7 +353,7 @@ class NBABudgetGame {
     async simulateSeason() {
         // If button says "View Results", just show the results
         if (this.simulateButton.textContent === 'View Results') {
-            this.showResults(currentDate);
+            this.showResults();
             return;
         }
 
@@ -398,8 +383,7 @@ class NBABudgetGame {
                     results: {
                         wins: predictedWins,
                         losses: 82 - predictedWins
-                    },
-                    date: currentDate // Include the current date in the submission
+                    }
                 })
             });
 
@@ -411,8 +395,8 @@ class NBABudgetGame {
             this.simulateButton.textContent = 'View Results';
             this.simulateButton.classList.add('active');
 
-            // Show results for the current date
-            this.showResults(currentDate);
+            // Show results
+            this.showResults();
 
         } catch (error) {
             console.error('Error:', error);
@@ -420,13 +404,10 @@ class NBABudgetGame {
         }
     }
 
-    async showResults(date = null) {
+    async showResults() {
         try {
-            // If no date provided, use current date
-            if (!date) {
-                const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
-                date = new Date(eastern).toISOString().split('T')[0];
-            }
+            const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
+            const date = new Date(eastern).toISOString().split('T')[0];
 
             const response = await fetch(`${API_BASE_URL}/api/leaderboard?date=${date}`, {
                 method: 'GET',
@@ -611,22 +592,6 @@ class NBABudgetGame {
             }
         }
     }
-
-    toggleHistoryView() {
-        const historyContainer = document.getElementById('history-container');
-        if (historyContainer) {
-            if (historyContainer.style.display === 'none' || !historyContainer.style.display) {
-                historyContainer.style.display = 'block';
-                loadHistory(); // Reload history when showing the view
-            } else {
-                historyContainer.style.display = 'none';
-                // When closing history view, reload current game state
-                const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
-                const today = new Date(eastern).toISOString().split('T')[0];
-                loadGameState(today);
-            }
-        }
-    }
 }
 
 function calculateExpectedWins(selectedPlayers) {
@@ -671,190 +636,7 @@ function calculateExpectedWins(selectedPlayers) {
 // Initialize the game
 const game = new NBABudgetGame();
 
-// Add these variables at the top with other state variables
-let currentDate = new Date().toISOString().split('T')[0];
-let availableDates = [];
-let playedDates = [];
-
-// Add this function to load history
-async function loadHistory() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/history?nickname=${encodeURIComponent(game.nickname)}`);
-        if (!response.ok) throw new Error('Failed to load history');
-        const data = await response.json();
-        availableDates = data.dates;
-        playedDates = data.played_dates;
-        updateHistoryView();
-    } catch (error) {
-        console.error('Error loading history:', error);
-        alert('Error loading history. Please try again later.');
-    }
-}
-
-// Add this function to load a specific game state
-async function loadGameState(date) {
-    try {
-        console.log('Loading game state for date:', date);
-        
-        // Fetch the game state for the selected date
-        const response = await fetch(`${API_BASE_URL}/api/game-state/${date}`);
-        if (!response.ok) throw new Error('Failed to load game state');
-        const data = await response.json();
-        
-        console.log('Received game state data:', data);
-        
-        // Store the current date and player stats
-        currentDate = date;
-        game.availablePlayers = data.player_stats;
-        
-        // Clear selected players when loading a historical game
-        game.selectedPlayers = [];
-        game.remainingBudget = game.budget;
-        
-        // Update the display with the new player pool
-        game.initializeDisplayedPlayers();
-        game.displayPlayers();
-        
-        // Check if user has already submitted for this date
-        const submissionsResponse = await fetch(`${API_BASE_URL}/api/history?nickname=${encodeURIComponent(game.nickname)}`);
-        if (submissionsResponse.ok) {
-            const historyData = await submissionsResponse.json();
-            if (historyData.played_dates.includes(date)) {
-                // If user has already submitted, show results
-                game.showResults(date);
-                // Disable player selection
-                document.querySelectorAll('.player-card').forEach(card => {
-                    card.style.pointerEvents = 'none';
-                    card.style.opacity = '0.7';
-                });
-                // Update button text
-                game.simulateButton.textContent = 'View Results';
-                game.simulateButton.classList.add('active');
-            } else {
-                // Enable player selection for unplayed dates
-                document.querySelectorAll('.player-card').forEach(card => {
-                    card.style.pointerEvents = 'auto';
-                    card.style.opacity = '1';
-                });
-                // Update button text
-                game.simulateButton.textContent = 'Submit Team';
-                game.simulateButton.classList.remove('active');
-            }
-        }
-    } catch (error) {
-        console.error('Error loading game state:', error);
-        alert('Error loading historical game state. Please try again.');
-    }
-}
-
-// Update the showResults function to handle historical dates
-async function showResults(date = null) {
-    try {
-        // If no date provided, use current date
-        if (!date) {
-            const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
-            date = new Date(eastern).toISOString().split('T')[0];
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/leaderboard?date=${date}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        game.displayResults(data);
-    } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        alert('Error fetching results. Please try again later.');
-    }
-}
-
-// Update the updateHistoryView function to properly show played dates
-function updateHistoryView() {
-    const historyContainer = document.getElementById('history-container');
-    if (!historyContainer) return;
-
-    historyContainer.innerHTML = `
-        <h3>Previous Games</h3>
-        <div class="history-list">
-            ${availableDates.map(date => `
-                <div class="history-item ${playedDates.includes(date) ? 'played' : ''}" onclick="loadGameState('${date}')">
-                    <span>${new Date(date).toLocaleDateString()}</span>
-                    ${playedDates.includes(date) ? '<span class="played-badge">Played</span>' : ''}
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
-
-// Modify the existing loadPlayerStats function
-async function loadPlayerStats() {
-    try {
-        // If we're loading a historical game state, don't fetch new stats
-        if (currentDate !== new Date().toISOString().split('T')[0]) {
-            return;
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/player-stats`);
-        if (!response.ok) throw new Error('Failed to load player stats');
-        playerStats = await response.json();
-        updatePlayerList();
-        updateTeamStats();
-    } catch (error) {
-        console.error('Error loading player stats:', error);
-    }
-}
-
-// Modify the existing saveNickname function
-async function saveNickname() {
-    const nickname = document.getElementById('nickname').value.trim();
-    if (!nickname) {
-        alert('Please enter a nickname');
-        return;
-    }
-
-    try {
-        // Check if nickname is available
-        const checkResponse = await fetch(`${API_BASE_URL}/api/submit-team`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                nickname: nickname,
-                players: selectedPlayers,
-                results: {
-                    wins: calculatePredictedWins()
-                }
-            })
-        });
-
-        if (checkResponse.status === 409) {
-            alert('Sorry, that name is already taken.');
-            return;
-        }
-
-        if (!checkResponse.ok) throw new Error('Failed to save nickname');
-        
-        currentNickname = nickname;
-        document.getElementById('nickname-container').style.display = 'none';
-        document.getElementById('game-container').style.display = 'block';
-        
-        // Load history after saving nickname
-        await loadHistory();
-    } catch (error) {
-        console.error('Error saving nickname:', error);
-        alert('Error saving nickname. Please try again.');
-    }
-}
-
-// Update the CSS for better layout
+// Update the CSS to remove history-related styles
 const style = document.createElement('style');
 style.textContent = `
     .results-buttons {
@@ -864,87 +646,19 @@ style.textContent = `
         margin-top: 20px;
     }
 
-    .close-results, .history-button {
+    .close-results {
         padding: 10px 20px;
         border: none;
         border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
         transition: background-color 0.2s;
-    }
-
-    .close-results {
         background-color: #666;
-        color: white;
-    }
-
-    .history-button {
-        background-color: #4CAF50;
         color: white;
     }
 
     .close-results:hover {
         background-color: #555;
-    }
-
-    .history-button:hover {
-        background-color: #45a049;
-    }
-
-    .history-container {
-        display: none;
-        position: fixed;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.9);
-        padding: 20px;
-        border-radius: 8px;
-        max-width: 400px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        z-index: 1000;
-    }
-
-    .history-container h3 {
-        color: white;
-        margin: 0 0 15px 0;
-        font-size: 1.4em;
-        text-align: center;
-    }
-
-    .history-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .history-item {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        color: white;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: background-color 0.2s;
-    }
-
-    .history-item:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .history-item.played {
-        border-left: 4px solid #4CAF50;
-    }
-
-    .played-badge {
-        background: #4CAF50;
-        padding: 3px 8px;
-        border-radius: 3px;
-        font-size: 0.9em;
     }
 
     .stats-matrix {
@@ -1041,9 +755,4 @@ style.textContent = `
         margin-left: 18px;
     }
 `;
-document.head.appendChild(style);
-
-// Call loadHistory when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    loadHistory();
-}); 
+document.head.appendChild(style); 
