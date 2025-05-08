@@ -72,11 +72,30 @@ class NBABudgetGame {
 
     checkDailySubmission() {
         const lastSubmission = localStorage.getItem('budgetgm_last_submission');
-        const today = new Date().toDateString();
+        const today = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"}).split(',')[0];
         
         if (lastSubmission === today) {
             this.simulateButton.textContent = 'View Results';
             this.simulateButton.classList.add('active');
+            // Disable player selection
+            const playerCards = document.querySelectorAll('.player-card');
+            playerCards.forEach(card => {
+                if (!card.classList.contains('selected')) {
+                    card.style.pointerEvents = 'none';
+                    card.style.opacity = '0.5';
+                }
+            });
+        } else {
+            this.simulateButton.textContent = 'Submit Team';
+            this.simulateButton.classList.remove('active');
+            // Enable player selection
+            const playerCards = document.querySelectorAll('.player-card');
+            playerCards.forEach(card => {
+                if (!card.classList.contains('selected')) {
+                    card.style.pointerEvents = 'auto';
+                    card.style.opacity = '1';
+                }
+            });
         }
     }
 
@@ -391,9 +410,22 @@ class NBABudgetGame {
                 throw new Error(`HTTP error! status: ${submitResponse.status}`);
             }
 
+            // Save submission date in Eastern time
+            const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"}).split(',')[0];
+            localStorage.setItem('budgetgm_last_submission', eastern);
+
             // Update button text
             this.simulateButton.textContent = 'View Results';
             this.simulateButton.classList.add('active');
+
+            // Disable player selection
+            const playerCards = document.querySelectorAll('.player-card');
+            playerCards.forEach(card => {
+                if (!card.classList.contains('selected')) {
+                    card.style.pointerEvents = 'none';
+                    card.style.opacity = '0.5';
+                }
+            });
 
             // Show results
             this.showResults();
