@@ -668,6 +668,37 @@ function calculateExpectedWins(selectedPlayers) {
     }
 }
 
+// Utility to get the current "game date" (after 1:00 AM ET, otherwise previous day)
+function getCurrentGameDate() {
+    const eastern = new Date().toLocaleString("en-US", { timeZone: "US/Eastern" });
+    const now = new Date(eastern);
+    if (now.getHours() < 1) {
+        now.setDate(now.getDate() - 1);
+    }
+    return now.toISOString().split('T')[0];
+}
+
+// On page load, clear "Your Team" if the date has changed
+(function clearTeamIfDateChanged() {
+    const lastTeamDate = localStorage.getItem('budgetgm_last_team_date');
+    const today = getCurrentGameDate();
+    if (lastTeamDate !== today) {
+        localStorage.removeItem('budgetgm_selected_team');
+        localStorage.removeItem('budgetgm_last_submission');
+        localStorage.setItem('budgetgm_last_team_date', today);
+    }
+})();
+
+// When saving a team, also update the date
+NBABudgetGame.prototype.saveSelectedTeam = function() {
+    localStorage.setItem('budgetgm_selected_team', JSON.stringify(this.selectedPlayers));
+    localStorage.setItem('budgetgm_last_team_date', getCurrentGameDate());
+};
+
+// Make sure to call game.saveSelectedTeam() whenever the team is updated
+// For example, after selecting/deselecting a player:
+// this.saveSelectedTeam();
+
 // Initialize the game
 const game = new NBABudgetGame();
 
