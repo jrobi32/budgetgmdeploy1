@@ -241,16 +241,22 @@ class NBABudgetGame {
                 <button onclick="game.removePlayer(${JSON.stringify(player).replace(/"/g, '&quot;')})">×</button>
             `;
             
-            // Add click handler to remove player when clicking anywhere on the player element
-            playerElement.addEventListener('click', (e) => {
-                // Don't trigger if clicking the remove button (it has its own handler)
-                if (e.target.tagName !== 'BUTTON') {
-                    this.removePlayer(player);
-                }
-            });
-            
-            // Add cursor pointer to indicate clickability
-            playerElement.style.cursor = 'pointer';
+            // Only add click handler if team hasn't been submitted
+            if (!this.hasSubmittedToday) {
+                // Add click handler to remove player when clicking anywhere on the player element
+                playerElement.addEventListener('click', (e) => {
+                    // Don't trigger if clicking the remove button (it has its own handler)
+                    if (e.target.tagName !== 'BUTTON') {
+                        this.removePlayer(player);
+                    }
+                });
+                
+                // Add cursor pointer to indicate clickability
+                playerElement.style.cursor = 'pointer';
+            } else {
+                // If team has been submitted, make it clear it's not clickable
+                playerElement.style.cursor = 'default';
+            }
             
             this.teamDisplay.appendChild(playerElement);
         });
@@ -646,18 +652,18 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.55) +  // Points coefficient (0.22 * 2.5)
-            (teamStats.rebounds * 0.18) +  // Rebounds coefficient (0.08 * 2.5)
-            (teamStats.assists * 0.08) +  // Assists coefficient (0.04 * 2.5)
-            (teamStats.steals * 0.13) +  // Steals coefficient (0.06 * 2.5)
+            (teamStats.points * 0.50) +  // Points coefficient (0.22 * 2.5)
+            (teamStats.rebounds * 0.22) +  // Rebounds coefficient (0.08 * 2.5)
+            (teamStats.assists * 0.10) +  // Assists coefficient (0.04 * 2.5)
+            (teamStats.steals * 0.14) +  // Steals coefficient (0.06 * 2.5)
             (teamStats.blocks * 0.10) +  // Blocks coefficient (0.04 * 2.5)
-            (teamStats.fg_pct * 0.18) +  // FG% coefficient (0.1 * 2.5)
-            (teamStats.ft_pct * 0.06) +  // FT% coefficient (0.04 * 2.5)
-            (teamStats.three_pct * 0.11) -  // 3P% coefficient (0.06 * 2.5)
-            (teamStats.turnovers * 0.19);   // Negative impact of turnovers (0.075 * 2.5)
+            (teamStats.fg_pct * 0.23) +  // FG% coefficient (0.1 * 2.5)
+            (teamStats.ft_pct * 0.08) +  // FT% coefficient (0.04 * 2.5)
+            (teamStats.three_pct * 0.12) -  // 3P% coefficient (0.06 * 2.5)
+            (teamStats.turnovers * 0.20);   // Negative impact of turnovers (0.075 * 2.5)
 
         // Scale up the prediction since bench players will contribute some wins
-        predictedWins = predictedWins * 1.1;  // Reduced scaling factor
+        predictedWins = predictedWins * 1;  // Reduced scaling factor
         
         // Ensure prediction stays within reasonable bounds and round to nearest integer
         return Math.round(Math.max(0, Math.min(74, predictedWins)));
