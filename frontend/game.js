@@ -440,7 +440,6 @@ class NBABudgetGame {
         try {
             const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
             const date = new Date(eastern).toISOString().split('T')[0];
-            console.log('Fetching leaderboard for date:', date);
 
             const response = await fetch(`${API_BASE_URL}/api/leaderboard?date=${date}`, {
                 method: 'GET',
@@ -454,20 +453,10 @@ class NBABudgetGame {
             }
 
             const data = await response.json();
-            console.log('Received leaderboard data:', data);
-            
-            if (!data.submissions || data.submissions.length === 0) {
-                console.warn('No submissions found in leaderboard data');
-                this.resultsSection.innerHTML = '<div class="error">No submissions found for today. Try submitting your team first!</div>';
-                this.resultsSection.style.display = 'block';
-                return;
-            }
-
             this.displayResults(data);
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
-            this.resultsSection.innerHTML = `<div class="error">Error fetching results: ${error.message}. Please try again later.</div>`;
-            this.resultsSection.style.display = 'block';
+            alert('Error fetching results. Please try again later.');
         }
     }
 
@@ -512,62 +501,55 @@ class NBABudgetGame {
         leaderboard.appendChild(headerRow);
 
         // Add submissions
-        if (data.submissions && data.submissions.length > 0) {
-            data.submissions.forEach((submission, index) => {
-                const row = document.createElement('div');
-                row.className = 'leaderboard-row';
-                if (submission.nickname === this.nickname) {
-                    row.classList.add('current-user');
-                }
+        data.submissions.forEach((submission, index) => {
+            const row = document.createElement('div');
+            row.className = 'leaderboard-row';
+            if (submission.nickname === this.nickname) {
+                row.classList.add('current-user');
+            }
 
-                // Create team images container
-                const teamImages = submission.players.map(player => {
-                    const imageUrl = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${player['Player ID']}.png`;
-                    return `<img src="${imageUrl}" alt="${player['Full Name']}" onerror="this.src='https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'" class="team-player-image">`;
-                }).join('');
+            // Create team images container
+            const teamImages = submission.players.map(player => {
+                const imageUrl = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${player['Player ID']}.png`;
+                return `<img src="${imageUrl}" alt="${player['Full Name']}" onerror="this.src='https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'" class="team-player-image">`;
+            }).join('');
 
-                // Calculate team stats
-                const teamStats = {
-                    points: submission.players.reduce((sum, p) => sum + parseFloat(p['Points Per Game (Avg)']), 0).toFixed(1),
-                    rebounds: submission.players.reduce((sum, p) => sum + parseFloat(p['Rebounds Per Game (Avg)']), 0).toFixed(1),
-                    assists: submission.players.reduce((sum, p) => sum + parseFloat(p['Assists Per Game (Avg)']), 0).toFixed(1),
-                    fg_pct: submission.players.reduce((sum, p) => sum + parseFloat(p['Field Goal % (Avg)']), 0) / submission.players.length,
-                    turnovers: submission.players.reduce((sum, p) => sum + parseFloat(p['TOV']), 0).toFixed(1),
-                    blocks: submission.players.reduce((sum, p) => sum + parseFloat(p['Blocks Per Game (Avg)']), 0).toFixed(1),
-                    steals: submission.players.reduce((sum, p) => sum + parseFloat(p['Steals Per Game (Avg)']), 0).toFixed(1)
-                };
+            // Calculate team stats
+            const teamStats = {
+                points: submission.players.reduce((sum, p) => sum + parseFloat(p['Points Per Game (Avg)']), 0).toFixed(1),
+                rebounds: submission.players.reduce((sum, p) => sum + parseFloat(p['Rebounds Per Game (Avg)']), 0).toFixed(1),
+                assists: submission.players.reduce((sum, p) => sum + parseFloat(p['Assists Per Game (Avg)']), 0).toFixed(1),
+                fg_pct: submission.players.reduce((sum, p) => sum + parseFloat(p['Field Goal % (Avg)']), 0) / submission.players.length,
+                turnovers: submission.players.reduce((sum, p) => sum + parseFloat(p['TOV']), 0).toFixed(1),
+                blocks: submission.players.reduce((sum, p) => sum + parseFloat(p['Blocks Per Game (Avg)']), 0).toFixed(1),
+                steals: submission.players.reduce((sum, p) => sum + parseFloat(p['Steals Per Game (Avg)']), 0).toFixed(1)
+            };
 
-                const statsDisplay = `
-                    <div class="stats-matrix">
-                        <div class="stats-row">
-                            <span>${teamStats.points}</span>
-                            <span>${teamStats.rebounds}</span>
-                            <span>${teamStats.assists}</span>
-                            <span>${(teamStats.fg_pct * 100).toFixed(1)}%</span>
-                            <span>${teamStats.turnovers}</span>
-                            <span>${teamStats.blocks}</span>
-                            <span>${teamStats.steals}</span>
-                        </div>
+            const statsDisplay = `
+                <div class="stats-matrix">
+                    <div class="stats-row">
+                        <span>${teamStats.points}</span>
+                        <span>${teamStats.rebounds}</span>
+                        <span>${teamStats.assists}</span>
+                        <span>${(teamStats.fg_pct * 100).toFixed(1)}%</span>
+                        <span>${teamStats.turnovers}</span>
+                        <span>${teamStats.blocks}</span>
+                        <span>${teamStats.steals}</span>
                     </div>
-                `;
+                </div>
+            `;
 
-                // Use the wins from the submission results
-                const wins = submission.results.wins;
+            // Use the wins from the submission results
+            const wins = submission.results.wins;
 
-                row.innerHTML = `
-                    <div class="rank">${index + 1}</div>
-                    <div class="user-wins"><span class="nickname">${submission.nickname}</span> won <span class="wins">${wins}</span> games</div>
-                    <div class="team">${teamImages}</div>
-                    <div class="stats">${statsDisplay}</div>
-                `;
-                leaderboard.appendChild(row);
-            });
-        } else {
-            const noDataRow = document.createElement('div');
-            noDataRow.className = 'leaderboard-row';
-            noDataRow.innerHTML = '<div class="no-data">No submissions found for today</div>';
-            leaderboard.appendChild(noDataRow);
-        }
+            row.innerHTML = `
+                <div class="rank">${index + 1}</div>
+                <div class="user-wins"><span class="nickname">${submission.nickname}</span> won <span class="wins">${wins}</span> games</div>
+                <div class="team">${teamImages}</div>
+                <div class="stats">${statsDisplay}</div>
+            `;
+            leaderboard.appendChild(row);
+        });
 
         resultsContainer.appendChild(leaderboard);
 
