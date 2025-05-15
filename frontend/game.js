@@ -226,50 +226,82 @@ class NBABudgetGame {
     }
 
     updateDisplay() {
-        // Update budget display
-        this.budgetDisplay.textContent = this.remainingBudget;
-
-        // Update team display
+        // Clear the team display
         this.teamDisplay.innerHTML = '';
-        this.selectedPlayers.forEach(player => {
-            const playerElement = document.createElement('div');
-            playerElement.className = 'team-player';
-            const imageUrl = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${player['Player ID']}.png`;
-            playerElement.innerHTML = `
-                <img src="${imageUrl}" alt="${player['Full Name']}" onerror="this.src='https://cdn.nba.com/headshots/nba/latest/1040x760/fallback.png'">
-                <span>${player['Full Name']} ($${player['Dollar Value']})</span>
-                <button onclick="game.removePlayer(${JSON.stringify(player).replace(/"/g, '&quot;')})">×</button>
-            `;
-            
-            // Only add click handler if team hasn't been submitted
-            if (!this.hasSubmittedToday) {
-                // Add click handler to remove player when clicking anywhere on the player element
-                playerElement.addEventListener('click', (e) => {
-                    // Don't trigger if clicking the remove button (it has its own handler)
-                    if (e.target.tagName !== 'BUTTON') {
-                        this.removePlayer(player);
-                    }
-                });
-                
-                // Add cursor pointer to indicate clickability
-                playerElement.style.cursor = 'pointer';
-            } else {
-                // If team has been submitted, make it clear it's not clickable
-                playerElement.style.cursor = 'default';
-            }
-            
-            this.teamDisplay.appendChild(playerElement);
-        });
+        
+        // Create team header
+        const teamHeader = document.createElement('div');
+        teamHeader.className = 'team-header';
+        teamHeader.innerHTML = `
+            <h2>Your Team</h2>
+            <div class="budget-info">
+                <span>Budget: $${this.budget}</span>
+                <span>Remaining: $${this.remainingBudget}</span>
+            </div>
+        `;
+        this.teamDisplay.appendChild(teamHeader);
 
-        // Update simulate button state
-        if (this.selectedPlayers.length === 5) {
-            this.simulateButton.classList.add('active');
+        // Calculate and display position multiplier
+        const positionMultiplier = calculatePositionMultiplier(this.selectedPlayers);
+        const multiplierDisplay = document.createElement('div');
+        multiplierDisplay.className = 'position-multiplier';
+        let multiplierText = '';
+        let multiplierClass = '';
+        
+        if (positionMultiplier === 1.1) {
+            multiplierText = 'Optimal Lineup (+10% Wins)';
+            multiplierClass = 'optimal';
+        } else if (positionMultiplier === 0.9) {
+            multiplierText = 'Suboptimal Lineup (-10% Wins)';
+            multiplierClass = 'suboptimal';
+        } else if (positionMultiplier === 0.8) {
+            multiplierText = 'Poor Lineup (-20% Wins)';
+            multiplierClass = 'poor';
         } else {
-            this.simulateButton.classList.remove('active');
+            multiplierText = 'Balanced Lineup (No Multiplier)';
+            multiplierClass = 'balanced';
         }
         
-        // Update the display without re-randomizing
-        this.displayPlayers();
+        multiplierDisplay.innerHTML = `<span class="${multiplierClass}">${multiplierText}</span>`;
+        this.teamDisplay.appendChild(multiplierDisplay);
+
+        // Create players container
+        const playersContainer = document.createElement('div');
+        playersContainer.className = 'selected-players';
+        
+        // Add selected players
+        this.selectedPlayers.forEach(player => {
+            const playerCard = document.createElement('div');
+            playerCard.className = 'selected-player-card';
+            
+            const imageUrl = `https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/${player['Player ID']}.png`;
+            
+            playerCard.innerHTML = `
+                <img src="${imageUrl}" alt="${player['Player Name']}" onerror="this.src='https://ak-static.cms.nba.com/wp-content/uploads/headshots/nba/latest/260x190/0.png'">
+                <div class="player-info">
+                    <h3>${player['Player Name']}</h3>
+                    <p>Position: ${player['Position']}</p>
+                    <p>Value: $${player['Dollar Value']}</p>
+                </div>
+                <button class="remove-player" data-player-id="${player['Player ID']}">×</button>
+            `;
+            
+            playersContainer.appendChild(playerCard);
+        });
+        
+        this.teamDisplay.appendChild(playersContainer);
+        
+        // Add event listeners for remove buttons
+        const removeButtons = this.teamDisplay.querySelectorAll('.remove-player');
+        removeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const playerId = button.getAttribute('data-player-id');
+                const player = this.selectedPlayers.find(p => p['Player ID'] === playerId);
+                if (player) {
+                    this.removePlayer(player);
+                }
+            });
+        });
     }
 
     removePlayer(player) {
@@ -635,6 +667,74 @@ class NBABudgetGame {
     }
 }
 
+function calculatePositionMultiplier(selectedPlayers) {
+    // Count positions
+    const positionCounts = {
+        PG: 0,
+        SG: 0,
+        SF: 0,
+        PF: 0,
+        C: 0
+    };
+
+    // Count each position
+    selectedPlayers.forEach(player => {
+        const position = player['Position'];
+        if (positionCounts.hasOwnProperty(position)) {
+            positionCounts[position]++;
+        }
+    });
+
+    // Check for severely imbalanced lineups (0.8x multiplier)
+    if (positionCounts.C >= 4 || 
+        (positionCounts.PG + positionCounts.SG) >= 5 ||
+        (positionCounts.C + positionCounts.PF) === 0) {
+        return 0.8;
+    }
+
+    // Check for suboptimal lineups (0.9x multiplier)
+    if (positionCounts.C >= 3 || 
+        positionCounts.PF >= 3 ||
+        (positionCounts.C >= 2 && positionCounts.PF >= 2) ||
+        (positionCounts.PG + positionCounts.SG) >= 4 ||
+        positionCounts.PG >= 3 ||
+        positionCounts.C === 0 ||
+        positionCounts.PG === 0 ||
+        positionCounts.PF === 0) {
+        return 0.9;
+    }
+
+    // Check for optimal lineups (1.1x multiplier)
+    // Traditional starting 5
+    if (positionCounts.PG === 1 && positionCounts.SG === 1 && 
+        positionCounts.SF === 1 && positionCounts.PF === 1 && positionCounts.C === 1) {
+        return 1.1;
+    }
+
+    // Modern small ball
+    if ((positionCounts.PG === 1 && positionCounts.SG === 1 && 
+         positionCounts.SF === 1 && positionCounts.PF === 2) ||
+        (positionCounts.PG === 1 && positionCounts.SG === 1 && 
+         positionCounts.SF === 2 && positionCounts.PF === 1) ||
+        (positionCounts.PG === 2 && positionCounts.SG === 1 && 
+         positionCounts.SF === 1 && positionCounts.PF === 1)) {
+        return 1.1;
+    }
+
+    // Positionless basketball
+    if ((positionCounts.PG === 1 && positionCounts.SG === 1 && 
+         positionCounts.SF === 3) ||
+        (positionCounts.PG === 1 && positionCounts.SG === 2 && 
+         positionCounts.SF === 1 && positionCounts.PF === 1) ||
+        (positionCounts.PG === 2 && positionCounts.SG === 1 && 
+         positionCounts.SF === 2)) {
+        return 1.1;
+    }
+
+    // Default case - balanced but not optimal
+    return 1.0;
+}
+
 function calculateExpectedWins(selectedPlayers) {
     try {
         // Calculate team statistics
@@ -652,18 +752,19 @@ function calculateExpectedWins(selectedPlayers) {
 
         // Calculate predicted wins starting from 0 instead of league average
         let predictedWins = 0 +  // Start from 0 instead of league average
-            (teamStats.points * 0.50) +  // Points coefficient (0.22 * 2.5)
-            (teamStats.rebounds * 0.22) +  // Rebounds coefficient (0.08 * 2.5)
-            (teamStats.assists * 0.10) +  // Assists coefficient (0.04 * 2.5)
-            (teamStats.steals * 0.14) +  // Steals coefficient (0.06 * 2.5)
-            (teamStats.blocks * 0.10) +  // Blocks coefficient (0.04 * 2.5)
-            (teamStats.fg_pct * 0.23) +  // FG% coefficient (0.1 * 2.5)
+            (teamStats.points * 0.48) +  // Points coefficient (0.22 * 2.5)
+            (teamStats.rebounds * 0.24) +  // Rebounds coefficient (0.08 * 2.5)
+            (teamStats.assists * 0.11) +  // Assists coefficient (0.04 * 2.5)
+            (teamStats.steals * 0.15) +  // Steals coefficient (0.06 * 2.5)
+            (teamStats.blocks * 0.12) +  // Blocks coefficient (0.04 * 2.5)
+            (teamStats.fg_pct * 0.28) +  // FG% coefficient (0.1 * 2.5)
             (teamStats.ft_pct * 0.08) +  // FT% coefficient (0.04 * 2.5)
             (teamStats.three_pct * 0.12) -  // 3P% coefficient (0.06 * 2.5)
-            (teamStats.turnovers * 0.20);   // Negative impact of turnovers (0.075 * 2.5)
+            (teamStats.turnovers * 0.22);   // Negative impact of turnovers (0.075 * 2.5)
 
-        // Scale up the prediction since bench players will contribute some wins
-        predictedWins = predictedWins * 1;  // Reduced scaling factor
+        // Apply position-based multiplier
+        const positionMultiplier = calculatePositionMultiplier(selectedPlayers);
+        predictedWins *= positionMultiplier;
         
         // Ensure prediction stays within reasonable bounds and round to nearest integer
         return Math.round(Math.max(0, Math.min(74, predictedWins)));
