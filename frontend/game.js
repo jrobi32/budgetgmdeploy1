@@ -72,7 +72,7 @@ class NBABudgetGame {
 
     checkDailySubmission() {
         const lastSubmission = localStorage.getItem('budgetgm_last_submission');
-        const today = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"}).split(',')[0];
+        const today = getCurrentGameDate();
         
         if (lastSubmission === today) {
             this.simulateButton.textContent = 'View Results';
