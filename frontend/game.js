@@ -672,7 +672,8 @@ function calculateExpectedWins(selectedPlayers) {
 function getCurrentGameDate() {
     const eastern = new Date().toLocaleString("en-US", { timeZone: "US/Eastern" });
     const now = new Date(eastern);
-    if (now.getHours() < 1) {
+    // If it's before 1:00 AM or exactly at 1:00 AM, return previous day
+    if (now.getHours() < 1 || (now.getHours() === 1 && now.getMinutes() === 0)) {
         now.setDate(now.getDate() - 1);
     }
     return now.toISOString().split('T')[0];
