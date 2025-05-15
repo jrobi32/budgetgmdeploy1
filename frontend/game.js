@@ -410,9 +410,8 @@ class NBABudgetGame {
                 throw new Error(`HTTP error! status: ${submitResponse.status}`);
             }
 
-            // Save submission date in Eastern time
-            const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"}).split(',')[0];
-            localStorage.setItem('budgetgm_last_submission', eastern);
+            // Save submission date using game date
+            localStorage.setItem('budgetgm_last_submission', getCurrentGameDate());
 
             // Update button text
             this.simulateButton.textContent = 'View Results';
@@ -438,8 +437,8 @@ class NBABudgetGame {
 
     async showResults() {
         try {
-            const eastern = new Date().toLocaleString("en-US", {timeZone: "US/Eastern"});
-            const date = new Date(eastern).toISOString().split('T')[0];
+            const date = getCurrentGameDate();
+            console.log('Fetching leaderboard for game date:', date);
 
             const response = await fetch(`${API_BASE_URL}/api/leaderboard?date=${date}`, {
                 method: 'GET',
@@ -453,6 +452,7 @@ class NBABudgetGame {
             }
 
             const data = await response.json();
+            console.log('Received leaderboard data:', data);
             this.displayResults(data);
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
